@@ -1,5 +1,7 @@
 package de.yanwittmann.ow.lang.tokenizer;
 
+import de.yanwittmann.ow.lang.renderer.shapes.ShapeDefinitions;
+
 public class WrittenNomaiTextLetter {
     private final WrittenNomaiTextSymbolType a;
     private final WrittenNomaiTextSymbolType b;
@@ -18,6 +20,10 @@ public class WrittenNomaiTextLetter {
 
     public WrittenNomaiTextSymbolType getB() {
         return b;
+    }
+
+    public ShapeDefinitions getShapeDefinition() {
+        return ShapeDefinitions.fromCombinationOfTypes(getFirst(), getSecond());
     }
 
     public WrittenNomaiTextSymbolType getFirst() {
@@ -48,7 +54,7 @@ public class WrittenNomaiTextLetter {
     public String toString() {
         return isSpecialCharacter() ?
                 "[" + token + "]" :
-                "[" + token + " => " + (getFirst() == null ? "_" : getFirst()) + " " + (getSecond() == null ? "_" : getSecond()) + "]";
+                "[" + token + " => " + (getFirst() == null ? "_" : getFirst()) + " " + (getSecond() == null ? "_" : getSecond()) + " " + getShapeDefinition() + "]";
     }
 
     public WrittenNomaiLetterType getType() {

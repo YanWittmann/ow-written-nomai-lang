@@ -4,6 +4,17 @@
   [https://www.reddit.com/r/outerwilds/comments/15fj6yu/took_a_shot_at_a_nomai_writing_system/](https://www.reddit.com/r/outerwilds/comments/15fj6yu/took_a_shot_at_a_nomai_writing_system/)
 - Language definition: [https://i.redd.it/5ctmfqykbjfb1.jpg](https://i.redd.it/5ctmfqykbjfb1.jpg)
 
+## Rules (reformulate them to be more precise)
+
+- there are the following symbols: line, bend, square, pentagon, hexagon, octagon
+- a "letter" us either a single symbol or two symbols combined
+- the delimiter between letters is a single line
+- the delimiter between words is a line connected to a dot connected to another line
+- vowels branch off from the letter or word dot that came before it
+- numbers branch off from the previous word dot
+- this means, a word dot can have three lines coming out of it: consonant, vowel and number, and you must read them
+  "number", "vowel", "consonant"
+
 ## Conversion table
 
 | vowels v / consonants > |    | Line | Bend | Square | Pentagon | Hexagon | Octagon |

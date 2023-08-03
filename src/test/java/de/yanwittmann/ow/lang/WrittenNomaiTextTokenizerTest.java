@@ -48,7 +48,7 @@ class WrittenNomaiTextTokenizerTest {
         LOG.info("Converted branches:{}", tree);
 
         final LineGenerator generator = new LineGenerator();
-        final List<Shape> shapes = generator.generateLines(words);
+        final List<Shape> shapes = generator.generateLines(tree);
 
         final LanguageRenderer renderer = new LanguageRenderer();
         renderer.setOffset(new Point2D.Double(100, 300));

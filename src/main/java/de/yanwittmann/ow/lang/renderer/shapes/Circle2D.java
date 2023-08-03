@@ -1,4 +1,4 @@
-package de.yanwittmann.ow.lang.renderer;
+package de.yanwittmann.ow.lang.renderer.shapes;
 
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;

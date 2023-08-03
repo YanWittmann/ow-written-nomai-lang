@@ -1,5 +1,8 @@
 package de.yanwittmann.ow.lang.renderer;
 
+import de.yanwittmann.ow.lang.renderer.shapes.Circle2D;
+import de.yanwittmann.ow.lang.renderer.shapes.TextShape;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -9,11 +12,11 @@ import java.util.List;
 
 public class LanguageRenderer extends JFrame {
 
-    private List<Shape> shapes;
+    private List<Object> shapes;
     private Point2D offset = new Point2D.Double(0, 0);
 
-    public LanguageRenderer(List<Shape> shapes) {
-        this.shapes = shapes;
+    public LanguageRenderer(List<?> shapes) {
+        this.shapes = (List<Object>) shapes;
         setBounds(100, 100, 800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
@@ -26,8 +29,8 @@ public class LanguageRenderer extends JFrame {
         this.offset = offset;
     }
 
-    public void setShapes(List<Shape> shapes) {
-        this.shapes = shapes;
+    public void setShapes(List<?> shapes) {
+        this.shapes = (List<Object>) shapes;
         repaint();
     }
 
@@ -36,12 +39,19 @@ public class LanguageRenderer extends JFrame {
         AffineTransform transform = new AffineTransform();
         transform.translate(offset.getX(), offset.getY());
         Graphics2D g2 = (Graphics2D) g;
-        g2.setColor(Color.BLACK);
-        for (Shape shape : shapes) {
+
+        for (Object shape : shapes) {
+            g2.setColor(Color.BLACK);
             if (shape instanceof Circle2D) {
-                g2.fill(transform.createTransformedShape(shape));
+                g2.fill(transform.createTransformedShape((Circle2D) shape));
+            } else if (shape instanceof TextShape) {
+                TextShape textShape = (TextShape) shape;
+                Point2D transformedPoint = transform.transform(textShape.getPosition(), null);
+                g2.drawString(textShape.getText(), (float) transformedPoint.getX(), (float) transformedPoint.getY());
+            } else if (shape instanceof Shape) {
+                g2.draw(transform.createTransformedShape((Shape) shape));
             } else {
-                g2.draw(transform.createTransformedShape(shape));
+                throw new RuntimeException("Unknown shape type: " + shape.getClass().getSimpleName());
             }
         }
     }
