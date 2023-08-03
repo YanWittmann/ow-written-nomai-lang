@@ -1,4 +1,4 @@
-package de.yanwittmann.ow.lang;
+package de.yanwittmann.ow.lang.tokenizer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -47,9 +47,14 @@ public class WrittenNomaiTextTokenizer {
             final List<WrittenNomaiTextLetter> tokenResult = new ArrayList<>();
             for (String word : token) {
                 final WrittenNomaiTextLetter letter = WrittenNomaiTextLetter.fromToken(word, false);
+                if (letter.isSpecialCharacter()) {
+                    continue;
+                }
                 tokenResult.add(letter);
             }
-            result.add(tokenResult);
+            if (!tokenResult.isEmpty()) {
+                result.add(tokenResult);
+            }
         }
 
         return result;

@@ -1,34 +1,111 @@
-package de.yanwittmann.ow.lang;
+package de.yanwittmann.ow.lang.tokenizer;
 
 public class WrittenNomaiTextLetter {
-    private final WrittenNomaiTextSymbolType vowel;
-    private final WrittenNomaiTextSymbolType consonant;
+    private final WrittenNomaiTextSymbolType a;
+    private final WrittenNomaiTextSymbolType b;
 
     private final String token;
 
-    public WrittenNomaiTextLetter(String token, WrittenNomaiTextSymbolType vowel, WrittenNomaiTextSymbolType consonant) {
-        this.vowel = vowel;
-        this.consonant = consonant;
+    public WrittenNomaiTextLetter(String token, WrittenNomaiTextSymbolType a, WrittenNomaiTextSymbolType b) {
+        this.a = a;
+        this.b = b;
         this.token = token;
     }
 
-    public WrittenNomaiTextSymbolType getVowel() {
-        return vowel;
+    public WrittenNomaiTextSymbolType getA() {
+        return a;
     }
 
-    public WrittenNomaiTextSymbolType getConsonant() {
-        return consonant;
+    public WrittenNomaiTextSymbolType getB() {
+        return b;
+    }
+
+    public WrittenNomaiTextSymbolType getFirst() {
+        if (getType().isConsonant()) {
+            return b == null ? a : b;
+        } else {
+            return a == null ? b : a;
+        }
+    }
+
+    public WrittenNomaiTextSymbolType getSecond() {
+        if (getType().isConsonant()) {
+            return a;
+        } else {
+            return b;
+        }
+    }
+
+    public String getToken() {
+        return token;
     }
 
     public boolean isSpecialCharacter() {
-        return vowel == null && consonant == null;
+        return a == null && b == null;
     }
 
     @Override
     public String toString() {
         return isSpecialCharacter() ?
                 "[" + token + "]" :
-                "[" + token + " => " + (vowel == null ? "_" : vowel) + " " + (consonant == null ? "_" : consonant) + "]";
+                "[" + token + " => " + (getFirst() == null ? "_" : getFirst()) + " " + (getSecond() == null ? "_" : getSecond()) + "]";
+    }
+
+    public WrittenNomaiLetterType getType() {
+        switch (token) {
+            case "aah":
+            case "iy":
+            case "ay":
+            case "ah":
+            case "oh":
+            case "eee":
+            case "oo":
+            case "eh":
+            case "uh":
+            case "oy":
+                return WrittenNomaiLetterType.VOWEL;
+
+            case "p":
+            case "b":
+            case "m":
+            case "w":
+            case "v":
+            case "f":
+            case "th":
+            case "l":
+            case "ch":
+            case "sh":
+            case "ih":
+            case "z":
+            case "s":
+            case "j":
+            case "t":
+            case "n":
+            case "d":
+            case "r":
+            case "y":
+            case "k":
+            case "g":
+            case "ng":
+            case "h":
+                return WrittenNomaiLetterType.CONSONANT;
+
+            case "0":
+            case "1":
+            case "2":
+            case "3":
+            case "4":
+            case "5":
+            case "6":
+            case "7":
+            case "8":
+            case "9":
+            case "10":
+                return WrittenNomaiLetterType.NUMBER;
+
+            default:
+                return WrittenNomaiLetterType.OTHER;
+        }
     }
 
     public static WrittenNomaiTextLetter fromToken(String token, boolean throwException) {

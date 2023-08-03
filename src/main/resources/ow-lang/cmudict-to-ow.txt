@@ -6,10 +6,10 @@ AE aah
 AE0 aah
 AE1 aah
 AE2 aah
-AH oh
-AH0 oh
-AH1 oh
-AH2 oh
+AH uh
+AH0 uh
+AH1 uh
+AH2 uh
 AO oo
 AO0 oo
 AO1 oo
