@@ -4,7 +4,6 @@ import de.yanwittmann.ow.lang.renderer.LanguageRenderer;
 import de.yanwittmann.ow.lang.tokenizer.WrittenNomaiTextSymbolType;
 
 import java.awt.*;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -163,23 +162,13 @@ public enum ShapeDefinitions {
         int offsetY = 0;
 
         for (ShapeDefinitions definition : ShapeDefinitions.values()) {
-            final Point2D[] positions = definition.getPositions();
-            final Point2D[] branchPositions = definition.getBranchPositions();
+            final LetterShape letterShape = LetterShape.fromShapeDefinition(definition);
+            letterShape.setBasePosition(new Point2D.Double(offsetX + shapeOffsetX, offsetY + shapeOffsetY));
+            shapes.add(letterShape);
 
-            if (positions.length > 0) {
-                GeneralPath path = new GeneralPath();
-                path.moveTo(positions[0].getX() + offsetX + shapeOffsetX, positions[0].getY() + offsetY + shapeOffsetY);
-                for (int i = 1; i < positions.length; i++) {
-                    path.lineTo(positions[i].getX() + offsetX + shapeOffsetX, positions[i].getY() + offsetY + shapeOffsetY);
-                }
-                shapes.add(path);
-            }
+            shapes.add(new Circle2D(offsetX + shapeOffsetX, offsetY + shapeOffsetY, 2));
 
-            for (Point2D branchPosition : branchPositions) {
-                shapes.add(new Circle2D(branchPosition.getX() + offsetX + shapeOffsetX, branchPosition.getY() + offsetY + shapeOffsetY, 3));
-            }
-
-            TextShape textShape = new TextShape(definition.name(), new Point2D.Double(offsetX, offsetY - 10));
+            final TextShape textShape = new TextShape(definition.name(), new Point2D.Double(offsetX, offsetY - 10));
             shapes.add(textShape);
 
             offsetX += plusX;
@@ -194,5 +183,26 @@ public enum ShapeDefinitions {
         renderer.setShapes(shapes);
         renderer.setSize(new Dimension(10 * plusX, offsetY + plusY * 2));
         renderer.setVisible(true);
+
+        new Thread(() -> {
+            int iteration = 0;
+            while (true) {
+                iteration++;
+                try {
+                    Thread.sleep(20);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                for (int j = 0; j < shapes.size(); j++) {
+                    if (shapes.get(j) instanceof LetterShape) {
+                        final LetterShape letterShape = (LetterShape) shapes.get(j);
+                        letterShape.setRotationAngle(letterShape.getRotationAngle() + 0.02);
+                        final double scale = 0.8 + Math.sin(iteration / 10.0) / 3.0;
+                        letterShape.setScale(scale);
+                    }
+                }
+                renderer.setShapes(shapes);
+            }
+        }).start();
     }
 }

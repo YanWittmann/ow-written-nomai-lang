@@ -14,6 +14,7 @@ import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Random;
 
 class WrittenNomaiTextTokenizerTest {
     private static final Logger LOG = LogManager.getLogger(WrittenNomaiTextTokenizerTest.class);
@@ -48,7 +49,7 @@ class WrittenNomaiTextTokenizerTest {
         LOG.info("Converted branches:{}", tree);
 
         final LineGenerator generator = new LineGenerator();
-        final List<Shape> shapes = generator.generateLines(tree);
+        final List<Shape> shapes = generator.generateLines(new Random(0), tree);
 
         final LanguageRenderer renderer = new LanguageRenderer();
         renderer.setOffset(new Point2D.Double(100, 300));
