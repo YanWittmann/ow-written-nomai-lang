@@ -54,20 +54,22 @@ class WrittenNomaiTextTokenizerTest {
 
         final LetterToLineConverter generator = new LetterToLineConverter();
 
-        if (false) {
+        if (true) {
             new Thread(() -> {
                 while (true) {
-                    final List<Object> shapes = generator.generateShapes(new Random(), tree);
+                    int seed = (int) (Math.random() * 1000000);
+                    System.out.println("Seed: " + seed);
+                    final List<Object> shapes = generator.generateShapes(new Random(seed), tree);
                     renderer.setShapes(shapes);
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(4000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
             }).start();
         } else {
-            final List<Object> shapes = generator.generateShapes(new Random(0), tree);
+            final List<Object> shapes = generator.generateShapes(new Random(952764), tree);
             renderer.setShapes(shapes);
         }
     }

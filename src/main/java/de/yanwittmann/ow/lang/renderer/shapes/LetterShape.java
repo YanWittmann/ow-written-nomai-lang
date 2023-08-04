@@ -3,6 +3,7 @@ package de.yanwittmann.ow.lang.renderer.shapes;
 import de.yanwittmann.ow.lang.tokenizer.WrittenNomaiBranchingLetterNode;
 import de.yanwittmann.ow.lang.tokenizer.WrittenNomaiTextLetter;
 
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 public class LetterShape {
@@ -98,6 +99,21 @@ public class LetterShape {
 
     public Point2D[] getAbsoluteLinePositions() {
         return absolutePositions(linePositions);
+    }
+
+    public Line2D[] getAbsoluteLines() {
+        // connect all absolute lines, do not wrap around (connect last with first)
+        final Point2D[] absoluteLinePositions = getAbsoluteLinePositions();
+        if (absoluteLinePositions.length > 0) {
+            final Line2D[] lines = new Line2D[absoluteLinePositions.length - 1];
+            for (int i = 0; i < absoluteLinePositions.length - 1; i++) {
+                lines[i] = new Line2D.Double(absoluteLinePositions[i], absoluteLinePositions[i + 1]);
+            }
+            return lines;
+
+        } else {
+            return new Line2D[0];
+        }
     }
 
     public Point2D[] getAbsoluteBranchPositions() {

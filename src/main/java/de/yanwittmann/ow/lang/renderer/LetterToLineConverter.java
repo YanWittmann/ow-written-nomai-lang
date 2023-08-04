@@ -172,16 +172,54 @@ public class LetterToLineConverter {
         return null;
     }
 
+    private boolean doesLineIntersectWithAnyOtherLine(Line2D line, double buffer, Line2D... otherLines) {
+        Line2D bufferedLine = new Line2D.Double(
+                new Point2D.Double(line.getX1() + buffer, line.getY1() + buffer),
+                new Point2D.Double(line.getX2() - buffer, line.getY2() - buffer));
+
+        for (Line2D otherLine : otherLines) {
+            if (bufferedLine.intersectsLine(otherLine)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Line2D findClosestBranchingPointsConnectingLine(LetterShape a, LetterShape b) {
         final Point2D[] posA = a.getAbsoluteBranchPositions();
         final Point2D[] posB = b.getAbsoluteBranchPositions();
 
+        final Line2D[] linesA = a.getAbsoluteLines();
+        final Line2D[] linesB = b.getAbsoluteLines();
+
         double bestDistance = Double.MAX_VALUE;
+        final Line2D bestLine = findClosestBranchingPointsConnectingLine(posA, posB, linesA, linesB, bestDistance, true);
+
+        if (bestLine == null) {
+            final Line2D bestLineWithoutIntersectionCheck = findClosestBranchingPointsConnectingLine(posA, posB, linesA, linesB, bestDistance, false);
+            if (bestLineWithoutIntersectionCheck == null) {
+                throw new RuntimeException("Could not find a connecting line between " + a + " and " + b);
+            }
+            return bestLineWithoutIntersectionCheck;
+        }
+
+        return bestLine;
+    }
+
+    private Line2D findClosestBranchingPointsConnectingLine(Point2D[] posA, Point2D[] posB, Line2D[] linesA, Line2D[] linesB, double bestDistance, boolean checkForIntersection) {
         Line2D bestLine = null;
 
         for (int i = 0; i < posA.length; i++) {
             for (int j = 0; j < posB.length; j++) {
                 final Line2D line = new Line2D.Double(posA[i], posB[j]);
+
+                if (checkForIntersection) {
+                    final boolean intersects = doesLineIntersectWithAnyOtherLine(line, 0.01, linesA) || doesLineIntersectWithAnyOtherLine(line, 0.01, linesB);
+                    if (intersects) {
+                        continue;
+                    }
+                }
+
                 final double distance = line.getP1().distance(line.getP2());
                 if (distance < bestDistance) {
                     bestLine = line;
@@ -189,7 +227,6 @@ public class LetterToLineConverter {
                 }
             }
         }
-
         return bestLine;
     }
 
