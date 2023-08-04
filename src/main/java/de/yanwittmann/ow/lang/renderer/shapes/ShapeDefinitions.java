@@ -44,17 +44,17 @@ public enum ShapeDefinitions {
             new int[][]{{70, 23}, {85, 38}, {85, 58}, {70, 72}, {46, 73}, {30, 59}}),
 
     BEND_SQUARE(WrittenNomaiTextSymbolType.BEND, WrittenNomaiTextSymbolType.SQUARE,
-            new int[][]{},
-            new int[][]{}),
+            new int[][]{{75, 39}, {74, 87}, {31, 87}, {31, 39}, {75, 39}, {65, 17}, {37, 13}},
+            new int[][]{{74, 87}, {31, 87}, {31, 39}}),
     BEND_PENTAGON(WrittenNomaiTextSymbolType.BEND, WrittenNomaiTextSymbolType.PENTAGON,
-            new int[][]{},
-            new int[][]{}),
+            new int[][]{{53, 32}, {20, 53}, {35, 90}, {71, 92}, {86, 61}, {53, 32}, {81, 21}, {53, 1}},
+            new int[][]{{20, 53}, {35, 90}, {71, 92}, {86, 61}}),
     BEND_HEXAGON(WrittenNomaiTextSymbolType.BEND, WrittenNomaiTextSymbolType.HEXAGON,
-            new int[][]{},
-            new int[][]{}),
+            new int[][]{{42, 34}, {20, 49}, {20, 72}, {41, 89}, {66, 74}, {66, 51}, {42, 34}, {63, 18}, {24, 12}},
+            new int[][]{{20, 49}, {20, 72}, {41, 89}, {66, 74}, {66, 51}}),
     BEND_OCTAGON(WrittenNomaiTextSymbolType.BEND, WrittenNomaiTextSymbolType.OCTAGON,
-            new int[][]{},
-            new int[][]{}),
+            new int[][]{{62, 36}, {40, 36}, {24, 51}, {24, 71}, {38, 85}, {63, 85}, {76, 74}, {76, 51}, {62, 36}, {70, 13}, {35, 12}},
+            new int[][]{{24, 51}, {24, 71}, {38, 85}, {63, 85}, {76, 74}, {76, 51}}),
 
     SQUARE_SQUARE(WrittenNomaiTextSymbolType.SQUARE, WrittenNomaiTextSymbolType.SQUARE,
             new int[][]{{63, 40}, {39, 15}, {16, 36}, {39, 61}, {61, 85}, {86, 64}, {63, 40}, {39, 61}},
@@ -70,21 +70,21 @@ public enum ShapeDefinitions {
             new int[][]{{25, 9}, {7, 29}, {71, 29}, {87, 42}, {90, 63}, {73, 82}, {47, 82}, {28, 64}}),
 
     PENTAGON_PENTAGON(WrittenNomaiTextSymbolType.PENTAGON, WrittenNomaiTextSymbolType.PENTAGON,
-            new int[][]{},
-            new int[][]{}),
+            new int[][]{{36, 56}, {59, 43}, {59, 16}, {24, 9}, {15, 41}, {36, 56}, {42, 88}, {77, 89}, {85, 57}, {59, 43}},
+            new int[][]{{36, 56}, {59, 43}, {59, 16}, {24, 9}, {15, 41}, {42, 88}, {77, 89}, {85, 57}}),
     PENTAGON_HEXAGON(WrittenNomaiTextSymbolType.PENTAGON, WrittenNomaiTextSymbolType.HEXAGON,
-            new int[][]{},
-            new int[][]{}),
+            new int[][]{{36, 56}, {62, 43}, {64, 14}, {22, 5}, {14, 43}, {36, 56}, {30, 86}, {59, 93}, {83, 81}, {88, 51}, {62, 43}},
+            new int[][]{{36, 56}, {62, 43}, {64, 14}, {22, 5}, {14, 43}, {30, 86}, {59, 93}, {83, 81}, {88, 51}}),
     PENTAGON_OCTAGON(WrittenNomaiTextSymbolType.PENTAGON, WrittenNomaiTextSymbolType.OCTAGON,
-            new int[][]{},
-            new int[][]{}),
+            new int[][]{{36, 48}, {55, 36}, {56, 13}, {20, 9}, {9, 39}, {36, 48}, {29, 71}, {41, 91}, {70, 93}, {88, 80}, {89, 52}, {76, 37}, {55, 36}},
+            new int[][]{{36, 48}, {55, 36}, {56, 13}, {20, 9}, {9, 39}, {29, 71}, {41, 91}, {70, 93}, {88, 80}, {89, 52}, {76, 37}}),
 
     HEXAGON_HEXAGON(WrittenNomaiTextSymbolType.HEXAGON, WrittenNomaiTextSymbolType.HEXAGON,
-            new int[][]{},
-            new int[][]{}),
-    HEXAGON_OCTAGON(WrittenNomaiTextSymbolType.OCTAGON, WrittenNomaiTextSymbolType.OCTAGON,
-            new int[][]{},
-            new int[][]{}),
+            new int[][]{{37, 55}, {62, 42}, {65, 15}, {42, 5}, {16, 16}, {11, 45}, {37, 55}, {34, 82}, {62, 96}, {87, 82}, {88, 54}, {62, 42}},
+            new int[][]{{37, 55}, {62, 42}, {65, 15}, {42, 5}, {16, 16}, {11, 45}, {34, 82}, {62, 96}, {87, 82}, {88, 54}}),
+    HEXAGON_OCTAGON(WrittenNomaiTextSymbolType.HEXAGON, WrittenNomaiTextSymbolType.OCTAGON,
+            new int[][]{{37, 55}, {56, 45}, {61, 20}, {38, 8}, {14, 19}, {10, 45}, {37, 55}, {34, 73}, {46, 89}, {70, 90}, {83, 80}, {83, 55}, {72, 46}, {56, 45}},
+            new int[][]{{37, 55}, {56, 45}, {61, 20}, {38, 8}, {14, 19}, {10, 45}, {34, 73}, {46, 89}, {70, 90}, {83, 80}, {83, 55}, {72, 46}}),
     ;
 
     private final Point2D[] positions;
@@ -97,8 +97,19 @@ public enum ShapeDefinitions {
         this.typeA = typeA;
         this.typeB = typeB;
 
-        this.positions = convertToPoints(positions);
+        final Point2D[] inputPositions = convertToPoints(positions);
+        final Rectangle2D inputBoundingBox = getBoundingBox(inputPositions);
+        final Point2D center = new Point2D.Double(inputBoundingBox.getCenterX(), inputBoundingBox.getCenterY());
+
+        // move the shape so that the center is at 0,0
+        this.positions = new Point2D[positions.length];
+        for (int i = 0; i < positions.length; i++) {
+            this.positions[i] = new Point2D.Double(positions[i][0] - center.getX(), positions[i][1] - center.getY());
+        }
         this.branchPositions = convertToPoints(branchPositions);
+        for (int i = 0; i < branchPositions.length; i++) {
+            this.branchPositions[i] = new Point2D.Double(branchPositions[i][0] - center.getX(), branchPositions[i][1] - center.getY());
+        }
     }
 
     public Point2D[] getPositions() {
@@ -109,7 +120,7 @@ public enum ShapeDefinitions {
         return branchPositions;
     }
 
-    public Rectangle2D getBoundingBox() {
+    public Rectangle2D getBoundingBox(Point2D[] positions) {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
         double maxX = Double.MIN_VALUE;
@@ -143,11 +154,13 @@ public enum ShapeDefinitions {
 
     public static void main(String[] args) {
         final List<Object> shapes = new ArrayList<>();
-        int offsetX = 0;
-        int offsetY = 0;
-
         final int plusX = 150;
         final int plusY = 120;
+        final int shapeOffsetX = 45;
+        final int shapeOffsetY = 45;
+
+        int offsetX = 0;
+        int offsetY = 0;
 
         for (ShapeDefinitions definition : ShapeDefinitions.values()) {
             final Point2D[] positions = definition.getPositions();
@@ -155,15 +168,15 @@ public enum ShapeDefinitions {
 
             if (positions.length > 0) {
                 GeneralPath path = new GeneralPath();
-                path.moveTo(positions[0].getX() + offsetX, positions[0].getY() + offsetY);
+                path.moveTo(positions[0].getX() + offsetX + shapeOffsetX, positions[0].getY() + offsetY + shapeOffsetY);
                 for (int i = 1; i < positions.length; i++) {
-                    path.lineTo(positions[i].getX() + offsetX, positions[i].getY() + offsetY);
+                    path.lineTo(positions[i].getX() + offsetX + shapeOffsetX, positions[i].getY() + offsetY + shapeOffsetY);
                 }
                 shapes.add(path);
             }
 
             for (Point2D branchPosition : branchPositions) {
-                shapes.add(new Circle2D(branchPosition.getX() + offsetX, branchPosition.getY() + offsetY, 3));
+                shapes.add(new Circle2D(branchPosition.getX() + offsetX + shapeOffsetX, branchPosition.getY() + offsetY + shapeOffsetY, 3));
             }
 
             TextShape textShape = new TextShape(definition.name(), new Point2D.Double(offsetX, offsetY - 10));
