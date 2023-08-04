@@ -42,6 +42,10 @@ public class LetterShape {
         this.sourceShapeDefinition = null;
     }
 
+    public WrittenNomaiBranchingLetterNode getSourceNode() {
+        return sourceNode;
+    }
+
     public ShapeDefinitions getSourceShapeDefinition() {
         return sourceShapeDefinition;
     }
@@ -110,6 +114,10 @@ public class LetterShape {
 
     public boolean isLetterConsonantOrRoot() {
         return sourceLetter == null || sourceLetter.getType().isConsonant();
+    }
+
+    public boolean isLetterRoot() {
+        return sourceLetter == null;
     }
 
     public static LetterShape fromWrittenNomaiBranchingLetterNode(WrittenNomaiBranchingLetterNode node) {

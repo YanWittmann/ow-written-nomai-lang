@@ -60,10 +60,15 @@ public class LanguageRenderer extends JFrame {
                     final Point2D transformedPoint2 = transform.transform(linePositions[i + 1], null);
                     g2.drawLine((int) transformedPoint.getX(), (int) transformedPoint.getY(), (int) transformedPoint2.getX(), (int) transformedPoint2.getY());
                 }
-                for (int i = 0; i < branchPositions.length; i++) {
-                    final Point2D transformedPoint = transform.transform(branchPositions[i], null);
+
+                if (letterShape.isLetterRoot() && branchPositions != null && branchPositions.length == 1) {
+                    final Point2D transformedPoint = transform.transform(branchPositions[0], null);
                     g2.fillOval((int) transformedPoint.getX() - 3, (int) transformedPoint.getY() - 3, 6, 6);
                 }
+                /*for (int i = 0; i < branchPositions.length; i++) {
+                    final Point2D transformedPoint = transform.transform(branchPositions[i], null);
+                    g2.fillOval((int) transformedPoint.getX() - 3, (int) transformedPoint.getY() - 3, 6, 6);
+                }*/
 
             } else if (shape instanceof TextShape) {
                 TextShape textShape = (TextShape) shape;
