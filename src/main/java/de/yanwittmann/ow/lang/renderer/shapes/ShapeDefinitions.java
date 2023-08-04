@@ -11,8 +11,8 @@ import java.util.List;
 
 public enum ShapeDefinitions {
     LINE(WrittenNomaiTextSymbolType.LINE, null,
-            new int[][]{{10, 50}, {90, 50}},
-            new int[][]{{10, 50}, {90, 50}}),
+            new int[][]{{25, 50}, {75, 50}},
+            new int[][]{{25, 50}, {75, 50}}),
     BEND(WrittenNomaiTextSymbolType.BEND, null,
             new int[][]{{22, 50}, {63, 25}, {85, 50}},
             new int[][]{{22, 50}, {85, 50}}),
@@ -148,7 +148,7 @@ public enum ShapeDefinitions {
             if (shapeDefinition.typeA == a && shapeDefinition.typeB == b) return shapeDefinition;
             else if (shapeDefinition.typeA == b && shapeDefinition.typeB == a) return shapeDefinition;
         }
-        return null;
+        throw new IllegalArgumentException("No shape definition found for " + a + " and " + b);
     }
 
     public static void main(String[] args) {
@@ -196,9 +196,9 @@ public enum ShapeDefinitions {
                 for (int j = 0; j < shapes.size(); j++) {
                     if (shapes.get(j) instanceof LetterShape) {
                         final LetterShape letterShape = (LetterShape) shapes.get(j);
-                        letterShape.setRotationAngle(letterShape.getRotationAngle() + 0.02);
                         final double scale = 0.8 + Math.sin(iteration / 10.0) / 3.0;
                         letterShape.setScale(scale);
+                        letterShape.setRotationAngle(letterShape.getRotationAngle() + scale / 40.0);
                     }
                 }
                 renderer.setShapes(shapes);

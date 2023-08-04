@@ -28,9 +28,9 @@ public class WrittenNomaiTextLetter {
 
     public WrittenNomaiTextSymbolType getFirst() {
         if (getType().isConsonant()) {
-            return b == null ? a : b;
+            return b;
         } else {
-            return a == null ? b : a;
+            return a;
         }
     }
 

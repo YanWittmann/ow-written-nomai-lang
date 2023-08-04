@@ -11,11 +11,11 @@ public class RandomBetweenInteger {
         this.max = max;
     }
 
-    public java.lang.Integer next() {
-        return (int) (Math.random() * (max - min) + min);
+    public int next() {
+        return next(new Random());
     }
 
-    public java.lang.Integer next(Random random) {
+    public int next(Random random) {
         return random.nextInt(max - min) + min;
     }
 }

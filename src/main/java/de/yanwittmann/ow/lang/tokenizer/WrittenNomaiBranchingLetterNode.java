@@ -6,30 +6,30 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class WittenNomaiBranchingLetterNode {
+public class WrittenNomaiBranchingLetterNode {
 
-    private static final Logger LOG = LogManager.getLogger(WittenNomaiBranchingLetterNode.class);
+    private static final Logger LOG = LogManager.getLogger(WrittenNomaiBranchingLetterNode.class);
 
     private WrittenNomaiTextLetter letter;
 
-    private WittenNomaiBranchingLetterNode nextWord;
+    private WrittenNomaiBranchingLetterNode nextWord;
 
-    private WittenNomaiBranchingLetterNode vowel;
-    private WittenNomaiBranchingLetterNode consonant;
-    private WittenNomaiBranchingLetterNode number;
+    private WrittenNomaiBranchingLetterNode vowel;
+    private WrittenNomaiBranchingLetterNode consonant;
+    private WrittenNomaiBranchingLetterNode number;
 
-    public WittenNomaiBranchingLetterNode(WrittenNomaiTextLetter letter) {
+    public WrittenNomaiBranchingLetterNode(WrittenNomaiTextLetter letter) {
         this.letter = letter;
     }
 
-    public WittenNomaiBranchingLetterNode getDeepestConsonant() {
+    public WrittenNomaiBranchingLetterNode getDeepestConsonant() {
         if (consonant == null) return this;
         return consonant.getDeepestConsonant();
     }
 
-    public WittenNomaiBranchingLetterNode getDeepestRoot() {
-        WittenNomaiBranchingLetterNode current = this;
-        WittenNomaiBranchingLetterNode currentDeepestRoot = this;
+    public WrittenNomaiBranchingLetterNode getDeepestRoot() {
+        WrittenNomaiBranchingLetterNode current = this;
+        WrittenNomaiBranchingLetterNode currentDeepestRoot = this;
         while (current.hasNextWord() || current.hasConsonant()) {
             if (current.hasNextWord()) current = current.getNextWord();
             else current = current.getConsonant();
@@ -63,24 +63,24 @@ public class WittenNomaiBranchingLetterNode {
         return nextWord != null;
     }
 
-    private static WittenNomaiBranchingLetterNode fromSentenceInternal(List<WrittenNomaiTextLetter> sentence) {
-        final WittenNomaiBranchingLetterNode root = new WittenNomaiBranchingLetterNode(null);
+    private static WrittenNomaiBranchingLetterNode fromSentenceInternal(List<WrittenNomaiTextLetter> sentence) {
+        final WrittenNomaiBranchingLetterNode root = new WrittenNomaiBranchingLetterNode(null);
 
-        WittenNomaiBranchingLetterNode currentVowelOrNumberBranch = root;
-        WittenNomaiBranchingLetterNode currentConsonantBranch = root;
+        WrittenNomaiBranchingLetterNode currentVowelOrNumberBranch = root;
+        WrittenNomaiBranchingLetterNode currentConsonantBranch = root;
         WrittenNomaiLetterType lastType = null;
         // append to currentNode until token type changes
 
         for (WrittenNomaiTextLetter letter : sentence) {
             final WrittenNomaiLetterType currentLetterType = letter.getType();
-            final WittenNomaiBranchingLetterNode letterNode = new WittenNomaiBranchingLetterNode(letter);
+            final WrittenNomaiBranchingLetterNode letterNode = new WrittenNomaiBranchingLetterNode(letter);
 
             if (lastType != currentLetterType) {
                 lastType = currentLetterType;
                 currentVowelOrNumberBranch = null;
             }
 
-            final WittenNomaiBranchingLetterNode appendToNode;
+            final WrittenNomaiBranchingLetterNode appendToNode;
 
             switch (currentLetterType) {
                 case VOWEL:
@@ -115,24 +115,24 @@ public class WittenNomaiBranchingLetterNode {
         return root;
     }
 
-    public static WittenNomaiBranchingLetterNode fromSentence(List<List<WrittenNomaiTextLetter>> sentence) {
-        final List<WittenNomaiBranchingLetterNode> flatNodes = sentence.stream().map(WittenNomaiBranchingLetterNode::fromSentenceInternal).collect(Collectors.toList());
+    public static WrittenNomaiBranchingLetterNode fromSentence(List<List<WrittenNomaiTextLetter>> sentence) {
+        final List<WrittenNomaiBranchingLetterNode> flatNodes = sentence.stream().map(WrittenNomaiBranchingLetterNode::fromSentenceInternal).collect(Collectors.toList());
         // LOG.info("flatNodes: {}", flatNodes.stream().map(WittenNomaiBranchingLetterNode::toString).collect(Collectors.joining("\n")));
 
         if (flatNodes.isEmpty()) {
-            return new WittenNomaiBranchingLetterNode(null);
+            return new WrittenNomaiBranchingLetterNode(null);
         }
 
-        final WittenNomaiBranchingLetterNode root = flatNodes.get(0);
-        WittenNomaiBranchingLetterNode currentNode = root;
+        final WrittenNomaiBranchingLetterNode root = flatNodes.get(0);
+        WrittenNomaiBranchingLetterNode currentNode = root;
 
         for (int i = 1; i < flatNodes.size(); i++) {
-            final WittenNomaiBranchingLetterNode node = flatNodes.get(i);
+            final WrittenNomaiBranchingLetterNode node = flatNodes.get(i);
 
             if (node.getLetterType() == WrittenNomaiLetterType.NUMBER || node.hasNumber()) {
                 currentNode.setNumber(node.getNumber());
             } else {
-                final WittenNomaiBranchingLetterNode deepestConsonant = currentNode.getDeepestConsonant();
+                final WrittenNomaiBranchingLetterNode deepestConsonant = currentNode.getDeepestConsonant();
                 deepestConsonant.setNextWord(node);
 
                 if (currentNode.hasNumber()) {
@@ -145,7 +145,7 @@ public class WittenNomaiBranchingLetterNode {
         }
 
         if (currentNode.hasNumber()) {
-            WittenNomaiBranchingLetterNode deepestRoot = root.getDeepestRoot();
+            WrittenNomaiBranchingLetterNode deepestRoot = root.getDeepestRoot();
             deepestRoot.setNumber(currentNode.getNumber());
             currentNode.setNumber(null);
         }
@@ -202,35 +202,35 @@ public class WittenNomaiBranchingLetterNode {
         this.letter = letter;
     }
 
-    public WittenNomaiBranchingLetterNode getVowel() {
+    public WrittenNomaiBranchingLetterNode getVowel() {
         return vowel;
     }
 
-    public void setVowel(WittenNomaiBranchingLetterNode vowel) {
+    public void setVowel(WrittenNomaiBranchingLetterNode vowel) {
         this.vowel = vowel;
     }
 
-    public WittenNomaiBranchingLetterNode getConsonant() {
+    public WrittenNomaiBranchingLetterNode getConsonant() {
         return consonant;
     }
 
-    public void setConsonant(WittenNomaiBranchingLetterNode consonant) {
+    public void setConsonant(WrittenNomaiBranchingLetterNode consonant) {
         this.consonant = consonant;
     }
 
-    public WittenNomaiBranchingLetterNode getNumber() {
+    public WrittenNomaiBranchingLetterNode getNumber() {
         return number;
     }
 
-    public void setNumber(WittenNomaiBranchingLetterNode number) {
+    public void setNumber(WrittenNomaiBranchingLetterNode number) {
         this.number = number;
     }
 
-    public WittenNomaiBranchingLetterNode getNextWord() {
+    public WrittenNomaiBranchingLetterNode getNextWord() {
         return nextWord;
     }
 
-    public void setNextWord(WittenNomaiBranchingLetterNode nextWord) {
+    public void setNextWord(WrittenNomaiBranchingLetterNode nextWord) {
         this.nextWord = nextWord;
     }
 }
