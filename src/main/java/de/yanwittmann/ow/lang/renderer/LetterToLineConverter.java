@@ -68,7 +68,7 @@ public class LetterToLineConverter {
 
         for (LetterShape letterShape : letterShapes) {
             final Point2D letterShapePosition = letterShape.getTransformation().getOffsetPosition();
-            final Point2D transformedPosition = coordinateSystem.worldToBezier(letterShapePosition);
+            final Point2D transformedPosition = coordinateSystem.worldToBezier(letterShapePosition, 50);
             letterShape.getTransformation().setOffsetPosition(transformedPosition);
         }
     }

@@ -10,8 +10,8 @@ public class BezierCurveCoordinateSystem {
         this.curve = curve;
     }
 
-    public Point2D worldToBezier(Point2D point) {
-        final double t = curve.findTForX(point.getX());
+    public Point2D worldToBezier(Point2D point, int detail) {
+        final double t = curve.findTForX(point.getX(), detail);
         final Point2D pointOnCurve = curve.getPointOnCurve(t);
         final Point2D normal = curve.getNormalAt(t);
         return new Point2D.Double(pointOnCurve.getX() + normal.getX() * point.getY(), pointOnCurve.getY() + normal.getY() * point.getY());

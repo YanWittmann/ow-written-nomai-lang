@@ -12,12 +12,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
+import javax.swing.*;
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 class WrittenNomaiTextTokenizerTest {
     private static final Logger LOG = LogManager.getLogger(WrittenNomaiTextTokenizerTest.class);
@@ -130,15 +134,65 @@ class WrittenNomaiTextTokenizerTest {
         };
         converter.setTransformAlongCurveProvider(transformAlongCurveProvider);
 
-        final WrittenNomaiBranchingLetterNode tree = converter.convertTextToNodeTree("I have 3287 Apples, but I wish I had 3288!");
-        final List<Object> shapes = converter.convertNodeTreeToDrawables(tree);
 
         final LanguageRenderer renderer = new LanguageRenderer();
         renderer.setOffset(new Point2D.Double(250, 1000));
         renderer.setSize(1000, 1050);
-        renderer.setShapes(shapes);
         renderer.setVisible(true);
         renderer.setLocationRelativeTo(null);
+
+
+        final JFrame textInputFrame = new JFrame("Text input");
+        textInputFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        textInputFrame.setSize(500, 100);
+        textInputFrame.setLocationRelativeTo(null);
+        textInputFrame.setLayout(new BorderLayout());
+
+        final JTextField textInput = new JTextField();
+        textInputFrame.add(textInput, BorderLayout.CENTER);
+        textInput.setText("I have 3287 Apples, but I wish I had 3288!");
+        AtomicReference<String> lastText = new AtomicReference<>("empty");
+
+        final JCheckBox randomizeSeed = new JCheckBox("Randomize seed");
+        textInputFrame.add(randomizeSeed, BorderLayout.SOUTH);
+
+        textInputFrame.setVisible(true);
+
+
+        new Thread(() -> {
+            while (true) {
+                final Random random;
+                if (randomizeSeed.isSelected()) {
+                    int seed = (int) (Math.random() * 1000000);
+                    random = new Random(seed);
+                    System.out.println("Seed: " + seed);
+                } else {
+                    random = new Random(0);
+                }
+
+                if (!lastText.get().equals(textInput.getText())) {
+                    lastText.set(textInput.getText());
+
+                    final WrittenNomaiBranchingLetterNode tree = converter.convertTextToNodeTree(lastText.get());
+                    final List<Object> shapes = converter.convertNodeTreeToDrawables(random, tree);
+
+                    {
+                        final List<List<String>> tokens = converter.getTokenizer().tokenizeToStringTokens(lastText.get());
+                        final List<List<WrittenNomaiTextLetter>> words = converter.getTokenizer().convertStringTokensToLetters(tokens);
+
+                        LOG.info("Words: {}", words.stream().flatMap(List::stream).map(WrittenNomaiTextLetter::getToken).collect(Collectors.joining(" ")));
+                    }
+
+                    renderer.setShapes(shapes);
+                }
+
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     public static void main(String[] args) throws IOException {

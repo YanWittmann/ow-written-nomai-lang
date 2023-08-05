@@ -68,11 +68,14 @@ public class BezierEditor {
             points.add(new Circle2D(point, 2));
         }
         curve.getControlPoints().forEach(point -> points.add(new Circle2D(point, 4)));
-        points.add(new Circle2D(coordinateSystem.worldToBezier(new Point2D.Double(
-                (System.currentTimeMillis() - START_TIME) / 1000.0 * 100 % curve.calculateLengthOfCurveAt(1),
-                // sin wave depending on time
-                Math.sin((System.currentTimeMillis() - START_TIME) / 1000.0 * 2 * Math.PI) * 15
-        )), 6));
+        points.add(
+                new Circle2D(coordinateSystem.worldToBezier(
+                        new Point2D.Double(
+                                (System.currentTimeMillis() - START_TIME) / 1000.0 * 100 % curve.calculateLengthOfCurveAt(1),
+                                // sin wave depending on time
+                                Math.sin((System.currentTimeMillis() - START_TIME) / 1000.0 * 2 * Math.PI) * 15
+                        ), 100
+                ), 6));
 
         renderer.setShapes(points);
     }
