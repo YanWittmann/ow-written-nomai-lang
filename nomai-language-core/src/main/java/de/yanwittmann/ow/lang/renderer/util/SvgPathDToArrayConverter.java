@@ -1,4 +1,4 @@
-package de.yanwittmann.ow.lang.renderer.shapes;
+package de.yanwittmann.ow.lang.renderer.util;
 
 import org.apache.commons.io.FileUtils;
 

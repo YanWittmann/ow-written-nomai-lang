@@ -32,8 +32,8 @@ class WrittenNomaiTextTokenizerTest {
     @Test
     public void test() throws IOException {
         final WrittenNomaiTextTokenizer tokenizer = new WrittenNomaiTextTokenizer(
-                new File("src/main/resources/ow-lang/cmudict.dict"),
-                new File("src/main/resources/ow-lang/cmudict-to-ow.txt")
+                new File("nomai-language-core/ src/main/resources/ow-lang/cmudict.dict"),
+                new File("nomai-language-core/ src/main/resources/ow-lang/cmudict-to-ow.txt")
         );
 
         final List<List<String>> tokens = tokenizer.tokenizeToStringTokens("I have 3287 Apples, but I wish I had 3288!");
@@ -47,8 +47,8 @@ class WrittenNomaiTextTokenizerTest {
 
     private static void manuallyTest() throws IOException {
         final WrittenNomaiTextTokenizer tokenizer = new WrittenNomaiTextTokenizer(
-                new File("src/main/resources/ow-lang/cmudict.dict"),
-                new File("src/main/resources/ow-lang/cmudict-to-ow.txt")
+                new File("nomai-language-core/src/main/resources/ow-lang/cmudict.dict"),
+                new File("nomai-language-core/src/main/resources/ow-lang/cmudict-to-ow.txt")
         );
 
         final List<List<String>> tokens = tokenizer.tokenizeToStringTokens("I have 3287 Apples but I wish I had 3288. Do you wish that too?");
@@ -103,8 +103,8 @@ class WrittenNomaiTextTokenizerTest {
     private static void uiTest() throws IOException {
         final WrittenNomaiConverter converter = new WrittenNomaiConverter();
         converter.setTokenizer(new WrittenNomaiTextTokenizer(
-                new File("src/main/resources/ow-lang/cmudict.dict"),
-                new File("src/main/resources/ow-lang/cmudict-to-ow.txt")
+                new File("nomai-language-core/src/main/resources/ow-lang/cmudict.dict"),
+                new File("nomai-language-core/src/main/resources/ow-lang/cmudict-to-ow.txt")
         ));
         converter.setLineGenerator(new LetterToLineConverter());
 
@@ -186,7 +186,7 @@ class WrittenNomaiTextTokenizerTest {
     }
 
     private static void toFileTest() throws IOException {
-        final String normalText = "I have 3287 Apples but I wish I had 3288. Do you wish that too?";
+        final String normalText = "I have 3287 Apples but I wish I had 3288.";
         final Random random = new Random();
         final File baseSaveDirectory = new File("");
         final BufferedImage backgroundImage = NomaiTextCompositor.BACKGROUND_NOMAI_WALL;
@@ -202,8 +202,8 @@ class WrittenNomaiTextTokenizerTest {
 
         final WrittenNomaiConverter converter = new WrittenNomaiConverter();
         converter.setTokenizer(new WrittenNomaiTextTokenizer(
-                new File("src/main/resources/ow-lang/cmudict.dict"),
-                new File("src/main/resources/ow-lang/cmudict-to-ow.txt")
+                new File("nomai-language-core/src/main/resources/ow-lang/cmudict.dict"),
+                new File("nomai-language-core/src/main/resources/ow-lang/cmudict-to-ow.txt")
         ));
         converter.setLineGenerator(new LetterToLineConverter());
 

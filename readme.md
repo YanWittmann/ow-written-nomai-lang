@@ -37,15 +37,15 @@ Source: [https://github.com/cmusphinx/cmudict](https://github.com/cmusphinx/cmud
 
 This project includes the `cmudict.dict` file from the CMU Pronouncing Dictionary, which is covered by its own license.
 The `cmudict.dict` file is located at
-[src/main/resources/ow-lang/cmudict.dict](src/main/resources/ow-lang/cmudict.dict).
+[src/main/resources/ow-lang/cmudict.dict](nomai-language-core/src/main/resources/ow-lang/cmudict.dict).
 
 The license for the CMU Pronouncing Dictionary is located at
-[src/main/resources/license/LICENSE-cmudict](src/main/resources/ow-lang/cmudict.dict).
+[src/main/resources/license/LICENSE-cmudict](nomai-language-core/src/main/resources/ow-lang/cmudict.dict).
 
 ## Cool stuff to play around with
 
-- [Create and edit bezier curves](src/test/java/de/yanwittmann/ow/lang/BezierEditor.java)
-- [View all the shapes used to generate the spirals](src/test/java/de/yanwittmann/ow/lang/ShapeDefinitionVisualizer.java)
+- [Create and edit bezier curves](nomai-language-core/src/test/java/de/yanwittmann/ow/lang/BezierEditor.java)
+- [View all the shapes used to generate the spirals](nomai-language-core/src/test/java/de/yanwittmann/ow/lang/ShapeDefinitionVisualizer.java)
 
 ## Todo
 
