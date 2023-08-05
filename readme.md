@@ -41,3 +41,10 @@ The `cmudict.dict` file is located at
 
 The license for the CMU Pronouncing Dictionary is located at
 [src/main/resources/license/LICENSE-cmudict](src/main/resources/ow-lang/cmudict.dict).
+
+## Todo
+
+This curve seems nice:
+
+    {{446, 709}, {270, 215}, {646, 1}, {896, 452}, {591, 482}}
+    {{0, 0}, {-176, -494}, {200, -708}, {450, -257}, {145, -227}}
