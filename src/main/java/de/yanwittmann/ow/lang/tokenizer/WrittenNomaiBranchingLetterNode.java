@@ -27,6 +27,16 @@ public class WrittenNomaiBranchingLetterNode {
         return consonant.getDeepestConsonant();
     }
 
+    public int getDepth() {
+        int depth = 0;
+        WrittenNomaiBranchingLetterNode current = this;
+        while (current.hasConsonant() || current.hasNextWord()) {
+            current = current.hasConsonant() ? current.getConsonant() : current.getNextWord();
+            depth++;
+        }
+        return depth;
+    }
+
     public WrittenNomaiBranchingLetterNode getDeepestRoot() {
         WrittenNomaiBranchingLetterNode current = this;
         WrittenNomaiBranchingLetterNode currentDeepestRoot = this;

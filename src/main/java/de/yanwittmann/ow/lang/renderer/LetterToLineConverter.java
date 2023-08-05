@@ -2,16 +2,22 @@ package de.yanwittmann.ow.lang.renderer;
 
 import de.yanwittmann.ow.lang.other.RandomBetweenDouble;
 import de.yanwittmann.ow.lang.other.RandomBetweenInteger;
+import de.yanwittmann.ow.lang.renderer.shapes.BezierCurveCoordinateSystem;
 import de.yanwittmann.ow.lang.renderer.shapes.LetterShape;
 import de.yanwittmann.ow.lang.tokenizer.WrittenNomaiBranchingLetterNode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
 
 public class LetterToLineConverter {
+
+    private static final Logger LOG = LogManager.getLogger(LetterToLineConverter.class);
 
     private int verticalGapBetweenCenterLineAndOuterLinesSingle = 50;
     private int verticalGapBetweenCenterLineAndOuterLinesMultiple = 80;
@@ -26,15 +32,45 @@ public class LetterToLineConverter {
     private RandomBetweenDouble randomRotation = new RandomBetweenDouble(0, Math.PI * 2);
     private RandomBetweenInteger randomOuterElementsStartPointHorizontalOffset = new RandomBetweenInteger(-10, 20);
 
-    public List<Object> generateShapes(Random random, WrittenNomaiBranchingLetterNode nodeTree) {
+    public List<Object> generateShapes(Random random, WrittenNomaiBranchingLetterNode nodeTree, Function<List<LetterShape>, BezierCurveCoordinateSystem> transformAlongCurveProvider) {
+        LOG.info("Generating shapes for node tree with depth [{}]", nodeTree.getDepth());
+
         final List<LetterShape> letterShapes = distributeLetterShapes(random, nodeTree);
+        LOG.info("Distributed [{}] letter shapes", letterShapes.size());
+
+        if (transformAlongCurveProvider != null) {
+            final BezierCurveCoordinateSystem curve = transformAlongCurveProvider.apply(letterShapes);
+            if (curve != null) {
+                transformLetterShapesAlongCurve(letterShapes, curve);
+                LOG.info("Transformed letter shapes along curve [{}]", curve.getCurve().getControlPoints().stream().map(p -> "{" + p.getX() + "," + p.getY() + "}").reduce((a, b) -> a + "," + b).orElse("null"));
+            } else {
+                LOG.warn("Transform along curve provider returned null, skipping transform.");
+            }
+        } else {
+            LOG.warn("No transform along curve provider provided, skipping transform.");
+        }
+
         final List<Line2D> connectingLines = generateConnectingLines(random, letterShapes);
+        LOG.info("Generated [{}] connecting lines", connectingLines.size());
 
         final ArrayList<Object> combinedShapes = new ArrayList<>();
         //noinspection CollectionAddAllCanBeReplacedWithConstructor
         combinedShapes.addAll(letterShapes);
         combinedShapes.addAll(connectingLines);
         return combinedShapes;
+    }
+
+    private void transformLetterShapesAlongCurve(List<LetterShape> letterShapes, BezierCurveCoordinateSystem coordinateSystem) {
+        if (coordinateSystem == null) {
+            LOG.warn("No transform along curve provided, skipping transform.");
+            return;
+        }
+
+        for (LetterShape letterShape : letterShapes) {
+            final Point2D letterShapePosition = letterShape.getTransformation().getOffsetPosition();
+            final Point2D transformedPosition = coordinateSystem.worldToBezier(letterShapePosition);
+            letterShape.getTransformation().setOffsetPosition(transformedPosition);
+        }
     }
 
     private List<LetterShape> distributeLetterShapes(Random random, WrittenNomaiBranchingLetterNode nodeTree) {
@@ -56,7 +92,7 @@ public class LetterToLineConverter {
                 }
 
                 final LetterShape rootShape = LetterShape.fromWrittenNomaiBranchingLetterNode(lastCenterBranchNode);
-                rootShape.setBasePosition(new Point2D.Double(centerConsonantBranchX, 0));
+                rootShape.getTransformation().setOffsetPosition(new Point2D.Double(centerConsonantBranchX, 0));
                 letterShapes.add(rootShape);
                 previousWasRoot = true;
 
@@ -68,7 +104,7 @@ public class LetterToLineConverter {
                 }
 
                 final LetterShape consonantShape = LetterShape.fromWrittenNomaiBranchingLetterNode(lastCenterBranchNode);
-                consonantShape.setBasePosition(new Point2D.Double(centerConsonantBranchX, 0));
+                consonantShape.getTransformation().setOffsetPosition(new Point2D.Double(centerConsonantBranchX, 0));
                 letterShapes.add(consonantShape);
                 previousWasRoot = false;
             }
@@ -89,7 +125,7 @@ public class LetterToLineConverter {
                     numberNode = numberNode == null ? lastCenterBranchNode.getNumber() : numberNode.getNumber();
 
                     final LetterShape numberShape = LetterShape.fromWrittenNomaiBranchingLetterNode(numberNode);
-                    numberShape.setBasePosition(new Point2D.Double(
+                    numberShape.getTransformation().setOffsetPosition(new Point2D.Double(
                             appendToUpperBranch ? upperBranchX : lowerBranchX,
                             (appendToUpperBranch ? -1 : 1) * (hasMultipleNumbers ? verticalGapBetweenCenterLineAndOuterLinesMultiple : verticalGapBetweenCenterLineAndOuterLinesSingle)
                     ));
@@ -118,7 +154,7 @@ public class LetterToLineConverter {
                     vowelNode = vowelNode == null ? lastCenterBranchNode.getVowel() : vowelNode.getVowel();
 
                     final LetterShape vowelShape = LetterShape.fromWrittenNomaiBranchingLetterNode(vowelNode);
-                    vowelShape.setBasePosition(new Point2D.Double(
+                    vowelShape.getTransformation().setOffsetPosition(new Point2D.Double(
                             appendToUpperBranch ? upperBranchX : lowerBranchX,
                             (appendToUpperBranch ? -1 : 1) * (hasMultipleVowels ? verticalGapBetweenCenterLineAndOuterLinesMultiple : verticalGapBetweenCenterLineAndOuterLinesSingle)
                     ));
@@ -147,17 +183,17 @@ public class LetterToLineConverter {
         }
 
         for (LetterShape letterShape : letterShapes) {
-            letterShape.setScale(randomScale.next(random) * (random.nextBoolean() ? 1 : -1));
-            letterShape.setRotationAngle(randomRotation.next(random));
+            letterShape.getTransformation().setScale(randomScale.next(random) * (random.nextBoolean() ? 1 : -1));
+            letterShape.getTransformation().setRotationAngle(randomRotation.next(random));
 
             final int offset;
             if (letterShape.isLetterConsonantOrRoot()) {
                 offset = randomVerticalOffsetCenter.next(random);
             } else {
                 // check if above or below center line by checking y position >/<= 0
-                offset = letterShape.getBasePosition().getY() > 0 ? randomVerticalOffsetOuter.next(random) : -randomVerticalOffsetOuter.next(random);
+                offset = letterShape.getTransformation().getOffsetPosition().getY() > 0 ? randomVerticalOffsetOuter.next(random) : -randomVerticalOffsetOuter.next(random);
             }
-            letterShape.setBasePosition(new Point2D.Double(letterShape.getBasePosition().getX(), letterShape.getBasePosition().getY() + offset));
+            letterShape.getTransformation().setOffsetPosition(new Point2D.Double(letterShape.getTransformation().getOffsetPosition().getX(), letterShape.getTransformation().getOffsetPosition().getY() + offset));
         }
 
         return letterShapes;

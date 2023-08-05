@@ -2,30 +2,54 @@ package de.yanwittmann.ow.lang.renderer.shapes;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class BezierCurve {
 
     private List<Point2D> controlPoints;
+    private List<Point2D> absoluteControlPoints;
+
+    private ShapeTransformation transformation = new ShapeTransformation();
 
     public BezierCurve() {
         this.controlPoints = new ArrayList<>();
+        recalculateAbsoluteControlPoints();
     }
 
-    public void addControlPoint(Point2D point) {
-        this.controlPoints.add(point);
+    public void setTransformation(ShapeTransformation transformation) {
+        this.transformation = transformation;
+        recalculateAbsoluteControlPoints();
+    }
+
+    public ShapeTransformation getTransformation() {
+        return transformation;
+    }
+
+    public void recalculateAbsoluteControlPoints() {
+        absoluteControlPoints = transformation.absolutePositions(controlPoints);
+    }
+
+    public void addControlPoint(Point2D... point) {
+        this.controlPoints.addAll(Arrays.asList(point));
+        recalculateAbsoluteControlPoints();
     }
 
     public void setControlPoint(int index, Point2D point) {
         this.controlPoints.set(index, point);
+        recalculateAbsoluteControlPoints();
     }
 
     public List<Point2D> getControlPoints() {
+        return absoluteControlPoints;
+    }
+
+    public List<Point2D> getUnTransformedControlPoints() {
         return controlPoints;
     }
 
     public Point2D getPointOnCurve(double t) {
-        return calculateBezierPoint(t, controlPoints);
+        return calculateBezierPoint(t, absoluteControlPoints);
     }
 
     private Point2D calculateBezierPoint(double t, List<Point2D> controlPoints) {
@@ -98,5 +122,18 @@ public class BezierCurve {
     public Point2D getNormalAt(double t) {
         Point2D tangent = getTangentAt(t);
         return new Point2D.Double(-tangent.getY(), tangent.getX());
+    }
+
+    public void setFirstControlPointAsOrigin() {
+        Point2D firstControlPoint = controlPoints.get(0);
+        for (int i = 0; i < controlPoints.size(); i++) {
+            Point2D point = controlPoints.get(i);
+            controlPoints.set(i, new Point2D.Double(point.getX() - firstControlPoint.getX(), point.getY() - firstControlPoint.getY()));
+        }
+        recalculateAbsoluteControlPoints();
+    }
+
+    public BezierCurveCoordinateSystem getCoordinateSystem() {
+        return new BezierCurveCoordinateSystem(this);
     }
 }

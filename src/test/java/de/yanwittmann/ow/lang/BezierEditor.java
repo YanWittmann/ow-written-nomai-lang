@@ -55,6 +55,9 @@ public class BezierEditor {
         curve.addControlPoint(new Point2D.Double(400, 300));
         curve.addControlPoint(new Point2D.Double(400, 400));
         curve.addControlPoint(new Point2D.Double(300, 400));
+        // curve.getTransformation().setOffsetPosition(new Point2D.Double(300, 300));
+        // curve.getTransformation().setRotationAngle(Math.PI / 4);
+        // curve.setFirstControlPointAsOrigin();
     }
 
     private static void drawCurve() {
@@ -65,7 +68,7 @@ public class BezierEditor {
             points.add(new Circle2D(point, 2));
         }
         curve.getControlPoints().forEach(point -> points.add(new Circle2D(point, 4)));
-        points.add(new Circle2D(coordinateSystem.convertPoint(new Point2D.Double(
+        points.add(new Circle2D(coordinateSystem.worldToBezier(new Point2D.Double(
                 (System.currentTimeMillis() - START_TIME) / 1000.0 * 100 % curve.calculateLengthOfCurveAt(1),
                 // sin wave depending on time
                 Math.sin((System.currentTimeMillis() - START_TIME) / 1000.0 * 2 * Math.PI) * 15
@@ -115,11 +118,16 @@ public class BezierEditor {
     }
 
     private static void printControlPoints() {
-        final StringJoiner stringJoiner = new StringJoiner(", ", "{", "}");
+        final StringJoiner transformed = new StringJoiner(", ", "{", "}");
         for (Point2D controlPoint : curve.getControlPoints()) {
-            stringJoiner.add("{" + (int) controlPoint.getX() + ", " + (int) controlPoint.getY() + "}");
+            transformed.add("{" + (int) controlPoint.getX() + ", " + (int) controlPoint.getY() + "}");
         }
-        System.out.println("Points: " + stringJoiner);
+        final StringJoiner unTransformed = new StringJoiner(", ", "{", "}");
+        for (Point2D controlPoint : curve.getUnTransformedControlPoints()) {
+            unTransformed.add("{" + (int) controlPoint.getX() + ", " + (int) controlPoint.getY() + "}");
+        }
+        System.out.println("Transf: " + transformed);
+        System.out.println("Untran: " + unTransformed);
         System.out.println("Length: " + curve.calculateLengthOfCurveAt(1));
     }
 

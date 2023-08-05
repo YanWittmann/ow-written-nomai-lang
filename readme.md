@@ -42,6 +42,11 @@ The `cmudict.dict` file is located at
 The license for the CMU Pronouncing Dictionary is located at
 [src/main/resources/license/LICENSE-cmudict](src/main/resources/ow-lang/cmudict.dict).
 
+## Cool stuff to play around with
+
+- [Create and edit bezier curves](src/test/java/de/yanwittmann/ow/lang/BezierEditor.java)
+- [View all the shapes used to generate the spirals](src/test/java/de/yanwittmann/ow/lang/ShapeDefinitionVisualizer.java)
+
 ## Todo
 
 This curve seems nice:
