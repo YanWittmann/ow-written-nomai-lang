@@ -17,6 +17,11 @@ public class BezierCurve {
         recalculateAbsoluteControlPoints();
     }
 
+    public BezierCurve(Point2D... controlPoints) {
+        this.controlPoints = new ArrayList<>(Arrays.asList(controlPoints));
+        recalculateAbsoluteControlPoints();
+    }
+
     public void setTransformation(ShapeTransformation transformation) {
         this.transformation = transformation;
         recalculateAbsoluteControlPoints();

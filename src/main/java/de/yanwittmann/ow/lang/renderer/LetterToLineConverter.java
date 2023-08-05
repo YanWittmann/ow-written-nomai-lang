@@ -19,18 +19,21 @@ public class LetterToLineConverter {
 
     private static final Logger LOG = LogManager.getLogger(LetterToLineConverter.class);
 
-    private int verticalGapBetweenCenterLineAndOuterLinesSingle = 50;
-    private int verticalGapBetweenCenterLineAndOuterLinesMultiple = 80;
-    private int outsideStartGapWidthSingle = 50;
+    private int gapBetweenCenterLineAndOuterLinesSingle = 70;
+    private int gapBetweenCenterLineAndOuterLinesMultiple = 80;
+
+    private int outsideStartGapWidthSingle = 10;
     private int outsideStartGapWidthMultiple = 70;
+
     private int wordLineWidth = 50;
     private int generalLetterWidth = 50;
 
     private RandomBetweenInteger randomVerticalOffsetCenter = new RandomBetweenInteger(-10, 10);
     private RandomBetweenInteger randomVerticalOffsetOuter = new RandomBetweenInteger(-10, 30);
-    private RandomBetweenDouble randomScale = new RandomBetweenDouble(0.7, 1.0);
+    private RandomBetweenDouble randomScale = new RandomBetweenDouble(0.7, 0.9);
     private RandomBetweenDouble randomRotation = new RandomBetweenDouble(0, Math.PI * 2);
     private RandomBetweenInteger randomOuterElementsStartPointHorizontalOffset = new RandomBetweenInteger(-10, 20);
+
 
     public List<Object> generateShapes(Random random, WrittenNomaiBranchingLetterNode nodeTree, Function<List<LetterShape>, BezierCurveCoordinateSystem> transformAlongCurveProvider) {
         LOG.info("Generating shapes for node tree with depth [{}]", nodeTree.getDepth());
@@ -127,7 +130,7 @@ public class LetterToLineConverter {
                     final LetterShape numberShape = LetterShape.fromWrittenNomaiBranchingLetterNode(numberNode);
                     numberShape.getTransformation().setOffsetPosition(new Point2D.Double(
                             appendToUpperBranch ? upperBranchX : lowerBranchX,
-                            (appendToUpperBranch ? -1 : 1) * (hasMultipleNumbers ? verticalGapBetweenCenterLineAndOuterLinesMultiple : verticalGapBetweenCenterLineAndOuterLinesSingle)
+                            (appendToUpperBranch ? -1 : 1) * (hasMultipleNumbers ? gapBetweenCenterLineAndOuterLinesMultiple : gapBetweenCenterLineAndOuterLinesSingle)
                     ));
                     letterShapes.add(numberShape);
 
@@ -156,7 +159,7 @@ public class LetterToLineConverter {
                     final LetterShape vowelShape = LetterShape.fromWrittenNomaiBranchingLetterNode(vowelNode);
                     vowelShape.getTransformation().setOffsetPosition(new Point2D.Double(
                             appendToUpperBranch ? upperBranchX : lowerBranchX,
-                            (appendToUpperBranch ? -1 : 1) * (hasMultipleVowels ? verticalGapBetweenCenterLineAndOuterLinesMultiple : verticalGapBetweenCenterLineAndOuterLinesSingle)
+                            (appendToUpperBranch ? -1 : 1) * (hasMultipleVowels ? gapBetweenCenterLineAndOuterLinesMultiple : gapBetweenCenterLineAndOuterLinesSingle)
                     ));
                     letterShapes.add(vowelShape);
 
@@ -292,5 +295,75 @@ public class LetterToLineConverter {
         }
 
         return connectingLines;
+    }
+
+    private Line2D shortenLineFromBothSides(Line2D line, double amount) {
+        if (line == null) {
+            return null;
+        }
+        final double angle = Math.atan2(line.getY2() - line.getY1(), line.getX2() - line.getX1());
+        final double x1 = line.getX1() + Math.cos(angle) * amount;
+        final double y1 = line.getY1() + Math.sin(angle) * amount;
+        final double x2 = line.getX2() - Math.cos(angle) * amount;
+        final double y2 = line.getY2() - Math.sin(angle) * amount;
+        return new Line2D.Double(x1, y1, x2, y2);
+    }
+
+    private int intersectionCount(Object shapeA, Object shapeB) {
+        final LetterShape letterShapeA = shapeA instanceof LetterShape ? (LetterShape) shapeA : null;
+        final LetterShape letterShapeB = shapeB instanceof LetterShape ? (LetterShape) shapeB : null;
+        final Line2D lineA = shapeA instanceof Line2D ? (Line2D) shapeA : null;
+        final Line2D lineB = shapeB instanceof Line2D ? (Line2D) shapeB : null;
+
+        final Line2D[] linesA;
+        final Line2D[] linesB;
+
+        if (letterShapeA != null && letterShapeB != null) {
+            linesA = letterShapeA.getAbsoluteLines();
+            linesB = letterShapeB.getAbsoluteLines();
+        } else if (letterShapeA != null) {
+            linesA = letterShapeA.getAbsoluteLines();
+            linesB = new Line2D[]{shortenLineFromBothSides(lineB, 2)};
+        } else if (letterShapeB != null) {
+            linesA = new Line2D[]{lineA};
+            linesB = letterShapeB.getAbsoluteLines();
+        } else {
+            linesA = new Line2D[]{shortenLineFromBothSides(lineA, 2)};
+            linesB = new Line2D[]{shortenLineFromBothSides(lineB, 2)};
+        }
+
+        int count = 0;
+
+        for (Line2D line1 : linesA) {
+            for (Line2D line2 : linesB) {
+                if (line1.intersectsLine(line2)) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    public int intersectionCount(List<Object> shapes) {
+        int count = 0;
+
+        for (int i = 0; i < shapes.size(); i++) {
+            final Object shapeA = shapes.get(i);
+            if (!(shapeA instanceof LetterShape || shapeA instanceof Line2D)) {
+                continue;
+            }
+
+            for (int j = i + 1; j < shapes.size(); j++) {
+                final Object shapeB = shapes.get(j);
+                if (!(shapeB instanceof LetterShape || shapeB instanceof Line2D)) {
+                    continue;
+                }
+
+                count += intersectionCount(shapeA, shapeB);
+            }
+        }
+
+        return count;
     }
 }

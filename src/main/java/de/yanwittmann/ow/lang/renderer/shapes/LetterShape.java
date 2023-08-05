@@ -73,6 +73,10 @@ public class LetterShape {
         return transformation.absolutePositions(linePositions);
     }
 
+    public Point2D[] getRawLinePositions() {
+        return linePositions;
+    }
+
     public Line2D[] getAbsoluteLines() {
         // connect all absolute lines, do not wrap around (connect last with first)
         final Point2D[] absoluteLinePositions = getAbsoluteLinePositions();
