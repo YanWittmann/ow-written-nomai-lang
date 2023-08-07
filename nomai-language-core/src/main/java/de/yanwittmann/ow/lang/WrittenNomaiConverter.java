@@ -96,9 +96,12 @@ public class WrittenNomaiConverter {
         if (largestX < 500) {
             // {{161, 505}, {137, 356}, {211, 174}, {338, 112}}
             curve.addControlPoint(new Point2D.Double(161, 505), new Point2D.Double(137, 356), new Point2D.Double(211, 174), new Point2D.Double(338, 112));
-        } else if (largestX >= 500 && largestX < 1300) {
+        } else if (largestX >= 500 && largestX < 950) {
             // {{212, 495}, {26, 224}, {317, 47}, {434, 228}}
             curve.addControlPoint(new Point2D.Double(212, 495), new Point2D.Double(26, 224), new Point2D.Double(317, 47), new Point2D.Double(434, 228));
+        } else if (largestX >= 950 && largestX < 1300) {
+            // {{199, 391}, {56, 121}, {359, 194}, {251, 298}}
+            curve.addControlPoint(new Point2D.Double(199, 391), new Point2D.Double(56, 121), new Point2D.Double(359, 194), new Point2D.Double(251, 298));
         } else if (largestX >= 1300 && largestX < 1700) {
             // {{365, 1012}, {43, 440}, {369, 45}, {821, 172}, {961, 593}, {606, 741}}
             curve.addControlPoint(new Point2D.Double(365, 1012), new Point2D.Double(43, 440), new Point2D.Double(369, 45), new Point2D.Double(821, 172), new Point2D.Double(961, 593), new Point2D.Double(606, 741));

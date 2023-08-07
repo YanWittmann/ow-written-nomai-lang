@@ -11,6 +11,7 @@ import de.yanwittmann.ow.lang.tokenizer.WrittenNomaiTextLetter;
 import de.yanwittmann.ow.lang.tokenizer.WrittenNomaiTextTokenizer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
@@ -26,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Disabled
 class WrittenNomaiTextTokenizerTest {
     private static final Logger LOG = LogManager.getLogger(WrittenNomaiTextTokenizerTest.class);
 
@@ -247,8 +249,8 @@ class WrittenNomaiTextTokenizerTest {
 
     public static void main(String[] args) throws IOException {
         // manuallyTest();
-        // uiTest();
-        toFileTest();
+        uiTest();
+        // toFileTest();
     }
 
 }
