@@ -18,6 +18,7 @@ public class NomaiTextCompositor {
     private final static Color NOMAI_TEXT_LIGHT_BLUE_TERNARY = new Color(0x87839F);
 
     public final static BufferedImage BACKGROUND_NOMAI_WALL = tryToReadBufferedImageFromResources("ow-lang-renderer/nomai_wall_background_texture.png");
+    public final static BufferedImage BACKGROUND_SPACE = tryToReadBufferedImageFromResources("ow-lang-renderer/blue_background_texture.png");
 
     private static BufferedImage readBufferedImageFromResources(String path) throws IOException {
         final InputStream resourceAsStream = NomaiTextCompositor.class.getClassLoader().getResourceAsStream(path);

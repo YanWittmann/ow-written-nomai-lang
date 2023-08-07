@@ -167,7 +167,20 @@ public class Main {
 
     private static RenderResult renderText(String normalText, String style) throws IOException {
         final Random random = new Random();
-        final BufferedImage backgroundImage = NomaiTextCompositor.BACKGROUND_NOMAI_WALL;
+
+        final BufferedImage backgroundImage;
+        switch (style) {
+            case "space":
+            case "stars":
+            case "blue":
+                backgroundImage = NomaiTextCompositor.BACKGROUND_SPACE;
+                break;
+            case "nomai_wall":
+            case "scroll_wall":
+            case "wall":
+            default:
+                backgroundImage = NomaiTextCompositor.BACKGROUND_NOMAI_WALL;
+        }
         final int backgroundImagePadding = 50;
 
         if (backgroundImage == null) {
