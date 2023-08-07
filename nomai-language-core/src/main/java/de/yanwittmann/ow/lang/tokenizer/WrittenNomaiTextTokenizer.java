@@ -60,6 +60,28 @@ public class WrittenNomaiTextTokenizer {
         return result;
     }
 
+    public List<String> convertTextToBranchSnippets(String text, boolean splitSentences) {
+        final List<String> snippets = new ArrayList<>();
+
+        for (String sentence : text.split("[.!?:]")) {
+            sentence = sentence.trim();
+            if (splitSentences) {
+                while (sentence.length() > 50) {
+                    final int lastSpace = sentence.substring(0, 50).lastIndexOf(" ");
+                    snippets.add(sentence.substring(0, lastSpace));
+                    sentence = sentence.substring(lastSpace + 1).trim();
+                }
+            }
+            if (!sentence.isEmpty()) {
+                snippets.add(sentence);
+            }
+        }
+
+        LOG.info("Transformed text into [{}] branch snippets", snippets.size());
+
+        return snippets;
+    }
+
     public List<List<String>> tokenizeToStringTokens(String text) {
         LOG.info("Tokenizing text [{}]", text);
         final List<List<String>> tokens = new ArrayList<>();

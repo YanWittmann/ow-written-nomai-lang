@@ -1,5 +1,6 @@
 package de.yanwittmann.ow.lang.renderer;
 
+import de.yanwittmann.ow.lang.WrittenNomaiConverter;
 import de.yanwittmann.ow.lang.other.RandomBetweenDouble;
 import de.yanwittmann.ow.lang.other.RandomBetweenInteger;
 import de.yanwittmann.ow.lang.renderer.shapes.BezierCurveCoordinateSystem;
@@ -35,22 +36,26 @@ public class LetterToLineConverter {
     private RandomBetweenInteger randomOuterElementsStartPointHorizontalOffset = new RandomBetweenInteger(-10, 20);
 
 
-    public List<Object> generateShapes(Random random, WrittenNomaiBranchingLetterNode nodeTree, Function<List<LetterShape>, BezierCurveCoordinateSystem> transformAlongCurveProvider) {
+    public WrittenNomaiConverter.DrawablesResult generateShapes(Random random, WrittenNomaiBranchingLetterNode nodeTree, Function<List<LetterShape>, BezierCurveCoordinateSystem> transformAlongCurveProvider) {
         LOG.info("Generating shapes for node tree with depth [{}]", nodeTree.getDepth());
 
         final List<LetterShape> letterShapes = distributeLetterShapes(random, nodeTree);
         LOG.info("Distributed [{}] letter shapes", letterShapes.size());
 
+        final BezierCurveCoordinateSystem curve;
+
         if (transformAlongCurveProvider != null) {
-            final BezierCurveCoordinateSystem curve = transformAlongCurveProvider.apply(letterShapes);
-            if (curve != null) {
-                transformLetterShapesAlongCurve(letterShapes, curve);
-                LOG.info("Transformed letter shapes along curve [{}]", curve.getCurve().getControlPoints().stream().map(p -> "{" + p.getX() + "," + p.getY() + "}").reduce((a, b) -> a + "," + b).orElse("null"));
-            } else {
-                LOG.warn("Transform along curve provider returned null, skipping transform.");
-            }
+            curve = transformAlongCurveProvider.apply(letterShapes);
         } else {
+            curve = null;
             LOG.warn("No transform along curve provider provided, skipping transform.");
+        }
+
+        if (curve != null) {
+            transformLetterShapesAlongCurve(letterShapes, curve);
+            LOG.info("Transformed letter shapes along curve [{}]", curve.getCurve().getControlPoints().stream().map(p -> "{" + p.getX() + "," + p.getY() + "}").reduce((a, b) -> a + "," + b).orElse("null"));
+        } else {
+            LOG.warn("Transform along curve provider returned null, skipping transform.");
         }
 
         final List<Line2D> connectingLines = generateConnectingLines(random, letterShapes);
@@ -60,7 +65,7 @@ public class LetterToLineConverter {
         //noinspection CollectionAddAllCanBeReplacedWithConstructor
         combinedShapes.addAll(letterShapes);
         combinedShapes.addAll(connectingLines);
-        return combinedShapes;
+        return new WrittenNomaiConverter.DrawablesResult(combinedShapes, curve);
     }
 
     private void transformLetterShapesAlongCurve(List<LetterShape> letterShapes, BezierCurveCoordinateSystem coordinateSystem) {
@@ -185,12 +190,18 @@ public class LetterToLineConverter {
             }
         }
 
+        boolean isFirstRoot = true;
+
         for (LetterShape letterShape : letterShapes) {
             letterShape.getTransformation().setScale(randomScale.next(random) * (random.nextBoolean() ? 1 : -1));
             letterShape.getTransformation().setRotationAngle(randomRotation.next(random));
 
             final int offset;
             if (letterShape.isLetterConsonantOrRoot()) {
+                if (isFirstRoot) {
+                    isFirstRoot = false;
+                    continue;
+                }
                 offset = randomVerticalOffsetCenter.next(random);
             } else {
                 // check if above or below center line by checking y position >/<= 0

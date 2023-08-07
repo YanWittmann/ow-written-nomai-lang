@@ -8,6 +8,59 @@ import java.util.Arrays;
 
 public class ImageStyler {
 
+    private static final int[] DX = {-1, 0, 1, 0};
+    private static final int[] DY = {0, 1, 0, -1};
+
+    public static BufferedImage distanceFromTarget(BufferedImage img, int checkDistance) {
+        int width = img.getWidth();
+        int height = img.getHeight();
+
+        BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        int[][] dist = new int[width][height];
+
+        // Calculate the distance to the nearest black pixel within the checkDistance square for each pixel
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                dist[x][y] = findNearestBlackPixel(img, x, y, checkDistance);
+            }
+
+            if (x % 100 == 0) {
+                System.out.println("progress: " + x + " / " + width);
+            }
+        }
+
+        // Set the color of the output image based on the distance
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int colorValue = Math.min(dist[x][y], checkDistance) * 255 / checkDistance;
+                output.setRGB(x, y, colorValue << 16 | colorValue << 8 | colorValue);
+            }
+        }
+
+        return output;
+    }
+
+    private static int findNearestBlackPixel(BufferedImage img, int x, int y, int checkDistance) {
+        int width = img.getWidth();
+        int height = img.getHeight();
+        int halfKernelSize = checkDistance / 2;
+        int minDist = checkDistance;
+
+        for (int dx = -halfKernelSize; dx <= halfKernelSize; dx++) {
+            for (int dy = -halfKernelSize; dy <= halfKernelSize; dy++) {
+                int nx = x + dx;
+                int ny = y + dy;
+
+                if (nx >= 0 && nx < width && ny >= 0 && ny < height && img.getRGB(nx, ny) == 0xFF000000) {
+                    int dist = (int) Math.sqrt(dx * dx + dy * dy);
+                    minDist = Math.min(minDist, dist);
+                }
+            }
+        }
+
+        return minDist;
+    }
+
     public static BufferedImage copyImage(BufferedImage image) {
         BufferedImage copy = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = copy.createGraphics();

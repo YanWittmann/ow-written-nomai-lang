@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -123,7 +124,11 @@ public class LanguageRenderer extends JFrame {
 
             } else if (shape instanceof Line2D) {
                 g2.setStroke(new BasicStroke(lineThickness));
-                g2.draw(transform.createTransformedShape((Shape) shape));
+                g2.draw(transform.createTransformedShape((Line2D) shape));
+
+            } else if (shape instanceof Path2D) {
+                g2.setStroke(new BasicStroke(lineThickness));
+                g2.draw(transform.createTransformedShape((Path2D) shape));
 
             } else if (shape instanceof Shape) {
                 g2.draw(transform.createTransformedShape((Shape) shape));

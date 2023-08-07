@@ -23,6 +23,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -46,9 +49,9 @@ public class Main {
             }
         }
 
-        // runBot();
+        runBot();
 
-        renderText("This is a text in a language that I cannot understand", "");
+        // renderText("This is a text in a language that I cannot understand", "");
     }
 
     private static void runBot() throws IOException, AuthenticationException, InterruptedException {
@@ -70,14 +73,36 @@ public class Main {
         };
 
 
-        for (RedditComment comment : client.getCommentsForPost("skyball_personal", "15jkyrq").submit()) {
-            try {
-                handleComment(customClient, comment);
-            } catch (IOException e) {
-                System.err.println("Error while handling comment [" + comment.getName() + "]: " + comment.getBody());
-                e.printStackTrace();
+        final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+
+        final Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    System.out.println("Fetching comments");
+                    for (RedditComment comment : client.getCommentsForPost("skyball_personal", "15jkyrq").submit()) {
+                        try {
+                            handleComment(customClient, comment);
+                        } catch (IOException e) {
+                            System.err.println("Error while handling comment [" + comment.getName() + "]: " + comment.getBody());
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (IOException | AuthenticationException e) {
+                    System.out.println("Error while fetching comments");
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (Exception e) {
+                    System.out.println("Unknown error while fetching comments");
+                    e.printStackTrace();
+                } finally {
+                    // Reschedule the task to run again after a delay of 20 seconds
+                    executor.schedule(this, 20, TimeUnit.SECONDS);
+                }
             }
-        }
+        };
+        executor.schedule(task, 0, TimeUnit.SECONDS);
     }
 
     private static void handleComment(RedditApiAccess customClient, RedditComment comment) throws IOException {
@@ -87,7 +112,7 @@ public class Main {
         if (replies != null && replies.getData() != null && replies.getData().getChildren() != null) {
             for (RedditData<RedditComment> reply : replies.getData().getChildren()) {
                 if (reply.getData().getBody() == null) {
-                    System.out.println("Reply body is null, this is most likely a comment with an image. Assume found.");
+                    // System.out.println("Reply body is null, this is most likely a comment with an image. Assume found.");
                     found = true;
                     break;
                 }
@@ -126,17 +151,16 @@ public class Main {
             return;
         }
 
-        System.out.println("Text: " + text);
-        System.out.println("Style: " + style);
+        System.out.println("Processing comment with [" + style + "]: " + text);
 
         final RenderResult renderResult = renderText(text, style);
 
-        // customClient.commentWithImageAsset(comment.getName(), "\"" + text + "\" as written nomai:",
-        //         "It says: " + renderResult.explanationText,
-        //         null,
-        //         renderResult.outFile.getAbsolutePath(),
-        //         "image/png"
-        // );
+        customClient.commentWithImageAsset(comment.getName(), "\"" + text + "\" as written nomai:",
+                "It says: " + renderResult.explanationText,
+                null,
+                renderResult.outFile.getAbsolutePath(),
+                "image/png"
+        );
     }
 
     private static RenderResult renderText(String normalText, String style) throws IOException {
@@ -155,7 +179,7 @@ public class Main {
         final List<List<WrittenNomaiTextLetter>> words = converter.getTokenizer().convertStringTokensToLetters(tokens);
         final WrittenNomaiBranchingLetterNode tree = WrittenNomaiBranchingLetterNode.fromSentence(words);
 
-        final List<Object> shapes = converter.convertNodeTreeToDrawables(random, 10, tree);
+        final List<Object> shapes = converter.convertNodeTreeToDrawables(random, 10, tree).getDrawables();
 
         final LanguageRenderer renderer = new LanguageRenderer();
         renderer.setOffset(new Point2D.Double(0, 0));

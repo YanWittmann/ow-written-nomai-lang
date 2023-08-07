@@ -21,7 +21,9 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -86,7 +88,7 @@ class WrittenNomaiTextTokenizerTest {
                 while (true) {
                     int seed = (int) (Math.random() * 1000000);
                     System.out.println("Seed: " + seed);
-                    final List<Object> shapes = generator.generateShapes(new Random(seed), tree, transformAlongCurveProvider);
+                    final List<Object> shapes = generator.generateShapes(new Random(seed), tree, transformAlongCurveProvider).getDrawables();
                     renderer.setShapes(shapes);
                     try {
                         Thread.sleep(4000);
@@ -96,7 +98,7 @@ class WrittenNomaiTextTokenizerTest {
                 }
             }).start();
         } else {
-            final List<Object> shapes = generator.generateShapes(new Random(952764), tree, transformAlongCurveProvider);
+            final List<Object> shapes = generator.generateShapes(new Random(952764), tree, transformAlongCurveProvider).getDrawables();
             renderer.setShapes(shapes);
         }
 
@@ -129,8 +131,9 @@ class WrittenNomaiTextTokenizerTest {
 
         final JTextField textInput = new JTextField();
         textInputFrame.add(textInput, BorderLayout.CENTER);
-        textInput.setText("I have 3287 Apples, but I wish I had 3288!");
-        AtomicReference<String> lastText = new AtomicReference<>("empty");
+        // textInput.setText("I have 3287 Apples, but I wish I had 3288!");
+        textInput.setText("I have something. Something great!");
+        final AtomicReference<String> lastText = new AtomicReference<>("empty");
 
         // add multiple checkboxes to the south contained in a JPanel
         final JPanel southPanel = new JPanel();
@@ -162,17 +165,27 @@ class WrittenNomaiTextTokenizerTest {
 
                         lastText.set(textInput.getText());
 
-                        final WrittenNomaiBranchingLetterNode tree = converter.convertTextToNodeTree(lastText.get());
-                        final List<Object> shapes = converter.convertNodeTreeToDrawables(random, 10, tree);
+                        final String operationalText = lastText.get();
+                        final List<String> snippets = converter.getTokenizer().convertTextToBranchSnippets(operationalText, false);
 
-                        {
-                            final List<List<String>> tokens = converter.getTokenizer().tokenizeToStringTokens(lastText.get());
+                        final Map<String, WrittenNomaiBranchingLetterNode> snippetTrees = new LinkedHashMap<>();
+                        final Map<String, WrittenNomaiConverter.DrawablesResult> snippetShapes = new LinkedHashMap<>();
+
+                        for (String snippet : snippets) {
+                            final List<List<String>> tokens = converter.getTokenizer().tokenizeToStringTokens(snippet);
                             final List<List<WrittenNomaiTextLetter>> words = converter.getTokenizer().convertStringTokensToLetters(tokens);
+                            final WrittenNomaiBranchingLetterNode tree = WrittenNomaiBranchingLetterNode.fromSentence(words);
+                            final WrittenNomaiConverter.DrawablesResult shapes = converter.convertNodeTreeToDrawables(random, 10, tree);
+
+                            snippetTrees.put(snippet, tree);
+                            snippetShapes.put(snippet, shapes);
 
                             LOG.info("Words: {}", words.stream().map(l -> l.stream().map(WrittenNomaiTextLetter::getToken).collect(Collectors.joining(" "))).collect(Collectors.joining(" . ")));
                         }
 
-                        renderer.setShapes(shapes);
+                        final List<Object> combinedShapes = converter.combineMultipleDrawableBranches(snippetShapes.values());
+
+                        renderer.setShapes(combinedShapes);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -212,7 +225,7 @@ class WrittenNomaiTextTokenizerTest {
         converter.setTransformAlongCurveProvider(WrittenNomaiConverter::sizeDependantBezierCurveProvider);
 
         final WrittenNomaiBranchingLetterNode tree = converter.convertTextToNodeTree(normalText);
-        final List<Object> shapes = converter.convertNodeTreeToDrawables(random, 10, tree);
+        final List<Object> shapes = converter.convertNodeTreeToDrawables(random, 10, tree).getDrawables();
 
         final LanguageRenderer renderer = new LanguageRenderer();
         renderer.setOffset(new Point2D.Double(0, 0));
@@ -224,19 +237,20 @@ class WrittenNomaiTextTokenizerTest {
         final BufferedImage baseRenderedImage = renderer.renderShapes(8000, 8000, 2, new Point2D.Double(4000, 4000));
         final BufferedImage croppedRenderedImage = renderer.cropImageToTarget(baseRenderedImage, 70);
 
-        writeToFile(croppedRenderedImage, new File(baseSaveDirectory, "nomai-result.png"));
+        writeToFile(croppedRenderedImage, new File(baseSaveDirectory, "nomai-1-result.png"));
 
-        if (true) {
-            final NomaiTextCompositor nomaiTextCompositor = new NomaiTextCompositor();
+        // final BufferedImage distanceFromTarget = ImageStyler.distanceFromTarget(croppedRenderedImage, 40);
+        // writeToFile(distanceFromTarget, new File(baseSaveDirectory, "nomai-2-distance-from-target.png"));
 
-            final BufferedImage blueStyledImage = nomaiTextCompositor.styleNomaiTextLightBlue(croppedRenderedImage);
-            writeToFile(blueStyledImage, new File(baseSaveDirectory, "nomai-result-blue.png"));
+        final NomaiTextCompositor nomaiTextCompositor = new NomaiTextCompositor();
 
-            final BufferedImage resizedStyledImage = LanguageRenderer.resizeImageMaintainAspectRatio(blueStyledImage, backgroundImage.getWidth() - backgroundImagePadding * 2, backgroundImage.getHeight() - backgroundImagePadding * 2);
+        final BufferedImage blueStyledImage = nomaiTextCompositor.styleNomaiTextLightBlue(croppedRenderedImage);
+        writeToFile(blueStyledImage, new File(baseSaveDirectory, "nomai-3-result-blue.png"));
 
-            final BufferedImage styledTextWithBackground = nomaiTextCompositor.overlayNomaiTextWithBackground(resizedStyledImage, backgroundImage);
-            writeToFile(styledTextWithBackground, new File(baseSaveDirectory, "nomai-result-blue-background.png"));
-        }
+        final BufferedImage resizedStyledImage = LanguageRenderer.resizeImageMaintainAspectRatio(blueStyledImage, backgroundImage.getWidth() - backgroundImagePadding * 2, backgroundImage.getHeight() - backgroundImagePadding * 2);
+
+        final BufferedImage styledTextWithBackground = nomaiTextCompositor.overlayNomaiTextWithBackground(resizedStyledImage, backgroundImage);
+        writeToFile(styledTextWithBackground, new File(baseSaveDirectory, "nomai-4-result-blue-background.png"));
     }
 
     private static void writeToFile(BufferedImage image, File file) {
