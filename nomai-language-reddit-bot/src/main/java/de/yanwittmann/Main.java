@@ -21,7 +21,9 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -175,18 +177,38 @@ public class Main {
 
         // final WrittenNomaiBranchingLetterNode tree = converter.convertTextToNodeTree(normalText);
         // the above line is equivalent to the following lines:
-        final List<List<String>> tokens = converter.getTokenizer().tokenizeToStringTokens(normalText);
+        /*final List<List<String>> tokens = converter.getTokenizer().tokenizeToStringTokens(normalText);
         final List<List<WrittenNomaiTextLetter>> words = converter.getTokenizer().convertStringTokensToLetters(tokens);
-        final WrittenNomaiBranchingLetterNode tree = WrittenNomaiBranchingLetterNode.fromSentence(words);
+        final WrittenNomaiBranchingLetterNode tree = WrittenNomaiBranchingLetterNode.fromSentence(words);*/
 
-        final List<Object> shapes = converter.convertNodeTreeToDrawables(random, 10, tree).getDrawables();
+
+        final List<String> snippets = converter.getTokenizer().convertTextToBranchSnippets(normalText, false).stream()
+                .distinct().limit(3).collect(Collectors.toList());
+
+        final Map<String, WrittenNomaiBranchingLetterNode> snippetTrees = new LinkedHashMap<>();
+        final Map<String, List<List<WrittenNomaiTextLetter>>> snippetWordsTrees = new LinkedHashMap<>();
+        final Map<String, WrittenNomaiConverter.DrawablesResult> snippetShapes = new LinkedHashMap<>();
+
+        for (String snippet : snippets) {
+            final List<List<String>> tokens = converter.getTokenizer().tokenizeToStringTokens(snippet);
+            final List<List<WrittenNomaiTextLetter>> words = converter.getTokenizer().convertStringTokensToLetters(tokens);
+            final WrittenNomaiBranchingLetterNode tree = WrittenNomaiBranchingLetterNode.fromSentence(words);
+            final WrittenNomaiConverter.DrawablesResult shapes = converter.convertNodeTreeToDrawables(random, 10, tree);
+
+            snippetTrees.put(snippet, tree);
+            snippetShapes.put(snippet, shapes);
+            snippetWordsTrees.put(snippet, words);
+        }
+
+        final List<Object> combinedShapes = converter.combineMultipleDrawableBranches(snippetShapes.values());
+
 
         final LanguageRenderer renderer = new LanguageRenderer();
         renderer.setOffset(new Point2D.Double(0, 0));
         renderer.setLineThickness(9);
         renderer.setDotRadius(12);
 
-        renderer.setShapes(shapes);
+        renderer.setShapes(combinedShapes);
 
         final BufferedImage baseRenderedImage = renderer.renderShapes(8000, 8000, 2, new Point2D.Double(4000, 4000));
         final BufferedImage croppedRenderedImage = renderer.cropImageToTarget(baseRenderedImage, 70);
@@ -203,7 +225,10 @@ public class Main {
         ImageIO.write(styledTextWithBackground, "png", outFile);
 
 
-        final String explanationText = words.stream().map(l -> l.stream().map(WrittenNomaiTextLetter::getToken).collect(Collectors.joining(" "))).collect(Collectors.joining(" | "));
+        final String explanationText = snippetWordsTrees.values().stream()
+                .map(e -> e.stream().map(l -> l.stream().map(WrittenNomaiTextLetter::getToken).collect(Collectors.joining(" "))).collect(Collectors.joining(" | ")))
+                .collect(Collectors.joining(" ||| "));
+
 
         return new RenderResult(outFile, explanationText);
     }
