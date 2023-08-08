@@ -287,8 +287,8 @@ class WrittenNomaiTextTokenizerTest {
 
     public static void main(String[] args) throws IOException {
         // manuallyTest();
-        uiTest(false);
-        // toFileTest();
+        // uiTest(false);
+        toFileTest();
     }
 
 }

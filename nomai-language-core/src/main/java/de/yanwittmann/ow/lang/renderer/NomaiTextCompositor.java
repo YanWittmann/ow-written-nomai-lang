@@ -21,10 +21,15 @@ public class NomaiTextCompositor {
     private final static Color NOMAI_TEXT_LIGHT_BLUE_SECONDARY = new Color(0xA29EBB);
     private final static Color NOMAI_TEXT_LIGHT_BLUE_TERNARY = new Color(0x87839F);
 
-    public final static BufferedImage BACKGROUND_NOMAI_WALL = tryToReadBufferedImageFromResources("ow-lang-renderer/nomai_wall_background_texture.png");
+    public final static BufferedImage BACKGROUND_NOMAI_WALL = tryToReadBufferedImageFromResources("ow-lang-renderer/nomai_wall_2_background_texture.png");
+    public final static BufferedImage BACKGROUND_NOMAI_WALL_HANGING_CITY = tryToReadBufferedImageFromResources("ow-lang-renderer/nomai_wall_3_background_texture.png");
+    public final static BufferedImage BACKGROUND_NOMAI_WALL_2_LAMP = tryToReadBufferedImageFromResources("ow-lang-renderer/nomai_wall_lamp_background_texture.png");
     public final static BufferedImage BACKGROUND_SPACE = tryToReadBufferedImageFromResources("ow-lang-renderer/blue_background_texture.png");
     public final static BufferedImage BACKGROUND_BLACK = tryToReadBufferedImageFromResources("ow-lang-renderer/black_background_texture.png");
     public final static BufferedImage BACKGROUND_TRANSPARENT = tryToReadBufferedImageFromResources("ow-lang-renderer/transparent_background_texture.png");
+    public final static BufferedImage BACKGROUND_SOLANUM = tryToReadBufferedImageFromResources("ow-lang-renderer/solanum_background_texture.png");
+    public final static BufferedImage BACKGROUND_STONE_WALL = tryToReadBufferedImageFromResources("ow-lang-renderer/stone_wall_background_texture.png");
+    public final static BufferedImage BACKGROUND_TESTING = tryToReadBufferedImageFromResources("ow-lang-renderer/testing_background_texture.png");
 
     private static BufferedImage readBufferedImageFromResources(String path) throws IOException {
         final InputStream resourceAsStream = NomaiTextCompositor.class.getClassLoader().getResourceAsStream(path);

@@ -176,6 +176,9 @@ public class RedditBotMain {
         if (text.isEmpty()) {
             return;
         }
+        if (style.isEmpty()) {
+            style = "wall";
+        }
 
         System.out.println("Processing comment with [" + style + "]: " + text);
 
@@ -197,7 +200,6 @@ public class RedditBotMain {
             case "space":
             case "stars":
             case "blue":
-            default:
                 backgroundImage = NomaiTextCompositor.BACKGROUND_SPACE;
                 break;
             case "black":
@@ -206,10 +208,28 @@ public class RedditBotMain {
             case "transparent":
                 backgroundImage = NomaiTextCompositor.BACKGROUND_TRANSPARENT;
                 break;
+            case "solanum":
+            case "quantum":
+            case "moon":
+                backgroundImage = NomaiTextCompositor.BACKGROUND_SOLANUM;
+                break;
+            case "stone":
+            case "cliff":
+                backgroundImage = NomaiTextCompositor.BACKGROUND_STONE_WALL;
+                break;
+            case "lamp":
+            case "wall 2":
+                backgroundImage = NomaiTextCompositor.BACKGROUND_NOMAI_WALL_2_LAMP;
+                break;
+            case "wall 3":
+                backgroundImage = NomaiTextCompositor.BACKGROUND_NOMAI_WALL;
+                break;
             case "nomai_wall":
             case "scroll_wall":
+            case "scroll":
             case "wall":
-                backgroundImage = NomaiTextCompositor.BACKGROUND_NOMAI_WALL;
+            default:
+                backgroundImage = NomaiTextCompositor.BACKGROUND_NOMAI_WALL_HANGING_CITY;
         }
         final int backgroundImagePadding = 50;
 
