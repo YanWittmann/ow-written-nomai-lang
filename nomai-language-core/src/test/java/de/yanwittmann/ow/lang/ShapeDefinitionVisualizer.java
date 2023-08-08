@@ -1,7 +1,6 @@
 package de.yanwittmann.ow.lang;
 
 import de.yanwittmann.ow.lang.renderer.LanguageRenderer;
-import de.yanwittmann.ow.lang.renderer.shapes.Circle2D;
 import de.yanwittmann.ow.lang.renderer.shapes.LetterShape;
 import de.yanwittmann.ow.lang.renderer.shapes.ShapeDefinitions;
 import de.yanwittmann.ow.lang.renderer.shapes.TextShape;
@@ -27,7 +26,7 @@ public class ShapeDefinitionVisualizer {
             letterShape.getTransformation().setOffsetPosition(new Point2D.Double(offsetX + shapeOffsetX, offsetY + shapeOffsetY));
             shapes.add(letterShape);
 
-            shapes.add(new Circle2D(offsetX + shapeOffsetX, offsetY + shapeOffsetY, 2));
+            // shapes.add(new Circle2D(offsetX + shapeOffsetX, offsetY + shapeOffsetY, 2));
 
             final TextShape textShape = new TextShape(definition.name(), new Point2D.Double(offsetX, offsetY - 10));
             shapes.add(textShape);
@@ -43,6 +42,8 @@ public class ShapeDefinitionVisualizer {
         renderer.setOffset(new Point2D.Double(30, 80));
         renderer.setShapes(shapes);
         renderer.setSize(new Dimension(10 * plusX, offsetY + plusY * 2));
+        renderer.setLineThickness(1);
+        renderer.setDotRadius(3);
         renderer.setVisible(true);
 
         new Thread(() -> {

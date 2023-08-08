@@ -225,7 +225,7 @@ class WrittenNomaiTextTokenizerTest {
     }
 
     private static void toFileTest() throws IOException {
-        final String normalText = "I have 3287 Apples but I wish I had 3288.";
+        final String normalText = "I have 3287 apples but I wish I had 3288.";
         final Random random = new Random();
         final File baseSaveDirectory = new File("");
         final BufferedImage backgroundImage = NomaiTextCompositor.BACKGROUND_NOMAI_WALL;
@@ -248,15 +248,32 @@ class WrittenNomaiTextTokenizerTest {
 
         converter.setTransformAlongCurveProvider(WrittenNomaiConverter::lengthDependantUpwardsSpiralBezierCurveProvider);
 
-        final WrittenNomaiBranchingLetterNode tree = converter.convertTextToNodeTree(normalText);
-        final List<Object> shapes = converter.convertNodeTreeToDrawables(random, 10, tree).getDrawables();
+
+        final List<String> snippets = converter.getTokenizer().convertTextToBranchSnippets(normalText, false);
+
+        final Map<String, WrittenNomaiBranchingLetterNode> snippetTrees = new LinkedHashMap<>();
+        final Map<String, WrittenNomaiConverter.DrawablesResult> snippetShapes = new LinkedHashMap<>();
+
+        for (String snippet : snippets) {
+            final List<List<String>> tokens = converter.getTokenizer().tokenizeToStringTokens(snippet);
+            final List<List<WrittenNomaiTextLetter>> words = converter.getTokenizer().convertStringTokensToLetters(tokens);
+            final WrittenNomaiBranchingLetterNode tree = WrittenNomaiBranchingLetterNode.fromSentence(words);
+            final WrittenNomaiConverter.DrawablesResult shapes = converter.convertNodeTreeToDrawables(random, 10, tree);
+
+            snippetTrees.put(snippet, tree);
+            snippetShapes.put(snippet, shapes);
+
+            LOG.info("Words: {}", words.stream().map(l -> l.stream().map(WrittenNomaiTextLetter::getToken).collect(Collectors.joining(" "))).collect(Collectors.joining(" . ")));
+        }
+
+        final List<Object> combinedShapes = converter.combineMultipleDrawableBranches(snippetShapes.values());
 
         final LanguageRenderer renderer = new LanguageRenderer();
         renderer.setOffset(new Point2D.Double(0, 0));
         renderer.setLineThickness(9);
         renderer.setDotRadius(12);
 
-        renderer.setShapes(shapes);
+        renderer.setShapes(combinedShapes);
 
         final BufferedImage baseRenderedImage = renderer.renderShapes(8000, 8000, 2, new Point2D.Double(4000, 4000));
         final BufferedImage croppedRenderedImage = renderer.cropImageToTarget(baseRenderedImage, 70);
@@ -287,8 +304,8 @@ class WrittenNomaiTextTokenizerTest {
 
     public static void main(String[] args) throws IOException {
         // manuallyTest();
-        // uiTest(false);
-        toFileTest();
+        uiTest(false);
+        // toFileTest();
     }
 
 }
