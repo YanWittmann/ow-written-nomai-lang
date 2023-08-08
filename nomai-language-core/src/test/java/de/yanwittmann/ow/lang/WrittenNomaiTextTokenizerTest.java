@@ -1,5 +1,6 @@
 package de.yanwittmann.ow.lang;
 
+import de.yanwittmann.ow.lang.other.Debounce;
 import de.yanwittmann.ow.lang.renderer.LanguageRenderer;
 import de.yanwittmann.ow.lang.renderer.LetterToLineConverter;
 import de.yanwittmann.ow.lang.renderer.NomaiTextCompositor;
@@ -25,6 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -104,7 +107,7 @@ class WrittenNomaiTextTokenizerTest {
 
     }
 
-    private static void uiTest() throws IOException {
+    private static void uiTest(boolean customControls) throws IOException {
         final WrittenNomaiConverter converter = new WrittenNomaiConverter();
         converter.setTokenizer(new WrittenNomaiTextTokenizer(
                 new File("nomai-language-core/src/main/resources/ow-lang/cmudict.dict"),
@@ -112,8 +115,7 @@ class WrittenNomaiTextTokenizerTest {
         ));
         converter.setLineGenerator(new LetterToLineConverter());
 
-        converter.setTransformAlongCurveProvider(WrittenNomaiConverter::sizeDependantBezierCurveProvider);
-
+        converter.setTransformAlongCurveProvider(WrittenNomaiConverter::lengthDependantUpwardsSpiralBezierCurveProvider);
 
         final LanguageRenderer renderer = new LanguageRenderer();
         renderer.setOffset(new Point2D.Double(250, 1000));
@@ -122,6 +124,7 @@ class WrittenNomaiTextTokenizerTest {
         renderer.setLocationRelativeTo(null);
         renderer.setCropImage(true);
 
+        final AtomicBoolean forceRegenerate = new AtomicBoolean(false);
 
         final JFrame textInputFrame = new JFrame("Text input");
         textInputFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -131,8 +134,7 @@ class WrittenNomaiTextTokenizerTest {
 
         final JTextField textInput = new JTextField();
         textInputFrame.add(textInput, BorderLayout.CENTER);
-        // textInput.setText("I have 3287 Apples, but I wish I had 3288!");
-        textInput.setText("I have something. Something great!");
+        textInput.setText("I have 3287 Apples but I wish I had 3288.");
         final AtomicReference<String> lastText = new AtomicReference<>("empty");
 
         // add multiple checkboxes to the south contained in a JPanel
@@ -147,12 +149,25 @@ class WrittenNomaiTextTokenizerTest {
         final JCheckBox continuouslyRegenerate = new JCheckBox("Continuously regenerate");
         southPanel.add(continuouslyRegenerate);
 
-        textInputFrame.setVisible(true);
+        final JCheckBox bezierCurveEnabled = new JCheckBox("Enable curve");
+        bezierCurveEnabled.setSelected(true);
+        southPanel.add(bezierCurveEnabled);
 
+        bezierCurveEnabled.addActionListener(e -> {
+            if (bezierCurveEnabled.isSelected()) {
+                converter.setTransformAlongCurveProvider(WrittenNomaiConverter::lengthDependantUpwardsSpiralBezierCurveProvider);
+            } else {
+                converter.setTransformAlongCurveProvider(null);
+            }
+            forceRegenerate.set(true);
+        });
+
+        textInputFrame.setVisible(true);
 
         new Thread(() -> {
             while (true) {
-                if (!lastText.get().equals(textInput.getText()) || continuouslyRegenerate.isSelected()) {
+                if (forceRegenerate.get() || !lastText.get().equals(textInput.getText()) || continuouslyRegenerate.isSelected()) {
+                    forceRegenerate.set(false);
                     try {
                         final Random random;
                         if (randomizeSeed.isSelected()) {
@@ -198,6 +213,15 @@ class WrittenNomaiTextTokenizerTest {
                 }
             }
         }).start();
+
+        if (customControls) {
+            Debounce debounce = new Debounce(500, TimeUnit.MILLISECONDS);
+
+            new BezierEditor().addOnCurveChangeListener(curve -> debounce.submit(() -> {
+                WrittenNomaiConverter.overrideBezierCurve = curve;
+                forceRegenerate.set(true);
+            }));
+        }
     }
 
     private static void toFileTest() throws IOException {
@@ -222,7 +246,7 @@ class WrittenNomaiTextTokenizerTest {
         ));
         converter.setLineGenerator(new LetterToLineConverter());
 
-        converter.setTransformAlongCurveProvider(WrittenNomaiConverter::sizeDependantBezierCurveProvider);
+        converter.setTransformAlongCurveProvider(WrittenNomaiConverter::lengthDependantUpwardsSpiralBezierCurveProvider);
 
         final WrittenNomaiBranchingLetterNode tree = converter.convertTextToNodeTree(normalText);
         final List<Object> shapes = converter.convertNodeTreeToDrawables(random, 10, tree).getDrawables();
@@ -263,7 +287,7 @@ class WrittenNomaiTextTokenizerTest {
 
     public static void main(String[] args) throws IOException {
         // manuallyTest();
-        uiTest();
+        uiTest(false);
         // toFileTest();
     }
 

@@ -22,6 +22,14 @@ public class BezierCurve {
         recalculateAbsoluteControlPoints();
     }
 
+    public BezierCurve clone() {
+        final BezierCurve clone = new BezierCurve();
+        clone.setTransformation(new ShapeTransformation(transformation));
+        clone.controlPoints = new ArrayList<>(controlPoints);
+        clone.recalculateAbsoluteControlPoints();
+        return clone;
+    }
+
     public void setTransformation(ShapeTransformation transformation) {
         this.transformation = transformation;
         recalculateAbsoluteControlPoints();

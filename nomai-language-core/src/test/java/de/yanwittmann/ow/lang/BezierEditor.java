@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
+import java.util.function.Consumer;
 
 public class BezierEditor {
 
@@ -26,11 +27,18 @@ public class BezierEditor {
     private static final BezierCurveCoordinateSystem coordinateSystem = new BezierCurveCoordinateSystem(curve);
     private static Optional<Integer> selectedPoint = Optional.empty();
 
+    private List<Consumer<BezierCurve>> onCurveChangeListeners = new ArrayList<>();
+
     public static void main(String[] args) {
+        new BezierEditor();
+    }
+
+    public BezierEditor() {
         setupRenderer();
         setupCurve();
         drawCurve();
         setupMouseListeners();
+        curveChanged();
 
         new Thread(() -> {
             while (true) {
@@ -44,23 +52,32 @@ public class BezierEditor {
         }).start();
     }
 
-    private static void setupRenderer() {
+    public void addOnCurveChangeListener(Consumer<BezierCurve> onCurveChangeListener) {
+        onCurveChangeListeners.add(onCurveChangeListener);
+    }
+
+    private void curveChanged() {
+        onCurveChangeListeners.forEach(onCurveChangeListener -> onCurveChangeListener.accept(curve));
+    }
+
+    private void setupRenderer() {
         renderer.setOffset(new Point2D.Double(0, 0));
         renderer.setSize(SIZE, SIZE);
         renderer.setVisible(true);
     }
 
-    private static void setupCurve() {
-        curve.addControlPoint(new Point2D.Double(300, 300));
-        curve.addControlPoint(new Point2D.Double(400, 300));
-        curve.addControlPoint(new Point2D.Double(400, 400));
-        curve.addControlPoint(new Point2D.Double(300, 400));
+    private void setupCurve() {
+        curve.addControlPoint(new Point2D.Double(432, 690), new Point2D.Double(146, 343), new Point2D.Double(426, 321), new Point2D.Double(756, 430), new Point2D.Double(450, 695), new Point2D.Double(428, 494));
+        // curve.addControlPoint(new Point2D.Double(300, 300));
+        // curve.addControlPoint(new Point2D.Double(400, 300));
+        // curve.addControlPoint(new Point2D.Double(400, 400));
+        // curve.addControlPoint(new Point2D.Double(300, 400));
         // curve.getTransformation().setOffsetPosition(new Point2D.Double(300, 300));
         // curve.getTransformation().setRotationAngle(Math.PI / 4);
         // curve.setFirstControlPointAsOrigin();
     }
 
-    private static void drawCurve() {
+    private void drawCurve() {
         final List<Object> points = new ArrayList<>();
 
         for (double t = 0; t <= 1; t += STEP) {
@@ -80,7 +97,7 @@ public class BezierEditor {
         renderer.setShapes(points);
     }
 
-    private static void setupMouseListeners() {
+    private void setupMouseListeners() {
         renderer.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -107,7 +124,7 @@ public class BezierEditor {
         });
     }
 
-    private static Optional<Integer> findClosestControlPoint(Point2D mousePosition) {
+    private Optional<Integer> findClosestControlPoint(Point2D mousePosition) {
         int closestPoint = -1;
         double closestPointDistance = Integer.MAX_VALUE;
         for (int i = 0; i < curve.getControlPoints().size(); i++) {
@@ -120,36 +137,60 @@ public class BezierEditor {
         return closestPoint == -1 ? Optional.empty() : Optional.of(closestPoint);
     }
 
-    private static void printControlPoints() {
-        final StringJoiner transformed = new StringJoiner(", ", "{", "}");
-        for (Point2D controlPoint : curve.getControlPoints()) {
-            transformed.add("{" + (int) controlPoint.getX() + ", " + (int) controlPoint.getY() + "}");
-        }
-        final StringJoiner unTransformed = new StringJoiner(", ", "{", "}");
-        for (Point2D controlPoint : curve.getUnTransformedControlPoints()) {
-            unTransformed.add("{" + (int) controlPoint.getX() + ", " + (int) controlPoint.getY() + "}");
-        }
+    private void printControlPoints() {
+        final String transformed = curveToPrintable(curve.getControlPoints());
+        final String unTransformed = curveToPrintable(curve.getUnTransformedControlPoints());
         System.out.println("Transf: " + transformed);
-        System.out.println("Untran: " + unTransformed);
+        if (!transformed.equals(unTransformed)) {
+            System.out.println("Untran: " + unTransformed);
+        }
         System.out.println("Length: " + curve.calculateLengthOfCurveAt(1));
     }
 
-    private static void handleMouseClick(MouseEvent e) {
+    private String curveToPrintable(List<Point2D> curve) {
+        final int variant = 1;
+
+        if (variant == 0) {
+            // {{161, 505}, {137, 356}, {211, 174}, {338, 112}}
+            final StringJoiner text = new StringJoiner(", ", "{", "}");
+            for (Point2D controlPoint : curve) {
+                text.add("{" + (int) controlPoint.getX() + ", " + (int) controlPoint.getY() + "}");
+            }
+            return text.toString();
+        } else if (variant == 1) {
+            // curve.addControlPoint(new Point2D.Double(161, 505), new Point2D.Double(137, 356), new Point2D.Double(211, 174), new Point2D.Double(338, 112));
+            final StringJoiner text = new StringJoiner(", ", "curve.addControlPoint(", ");");
+            for (Point2D controlPoint : curve) {
+                text.add("new Point2D.Double(" + (int) controlPoint.getX() + ", " + (int) controlPoint.getY() + ")");
+            }
+            return text.toString();
+        }
+
+        return "";
+    }
+
+    private void handleMouseClick(MouseEvent e) {
         final Point2D mousePosition = renderer.getMousePosition();
         if (mousePosition != null) {
             if (e.getButton() == MouseEvent.BUTTON3) {
                 curve.addControlPoint(mousePosition);
+                curveChanged();
             } else if (e.getButton() == MouseEvent.BUTTON2) {
-                findClosestControlPoint(mousePosition).ifPresent(curve.getControlPoints()::remove);
+                Optional<Integer> closestControlPoint = findClosestControlPoint(mousePosition);
+                if (closestControlPoint.isPresent()) {
+                    curve.getUnTransformedControlPoints().remove((int) closestControlPoint.get());
+                    curveChanged();
+                }
             }
             drawCurve();
         }
     }
 
-    private static void handleMouseDrag(MouseEvent e) {
+    private void handleMouseDrag(MouseEvent e) {
         final Point2D mousePosition = renderer.getMousePosition();
         if (mousePosition != null && selectedPoint.isPresent()) {
             curve.setControlPoint(selectedPoint.get(), mousePosition);
+            curveChanged();
             drawCurve();
         }
     }

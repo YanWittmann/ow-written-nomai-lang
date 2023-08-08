@@ -110,7 +110,29 @@ public class WrittenNomaiTextTokenizer {
         final List<List<String>> phoneticTranscriptions = dictionary.get(word);
 
         if (phoneticTranscriptions == null) {
-            LOG.warn("Word not found in dictionary: {}", word);
+            // find the largest substring of the word that is in the dictionary and repeat until the word is fully tokenized
+            LOG.warn("Word not found in dictionary, parsing as subtokens: {}", word);
+            String remainingWord = word;
+            while (!remainingWord.isEmpty()) {
+                boolean found = false;
+                for (int i = remainingWord.length(); i > 0; i--) {
+                    final String substring = remainingWord.substring(0, i);
+                    if (dictionary.containsKey(substring)) {
+                        final List<String> subtokens = tokenizeWord(substring);
+                        tokens.addAll(subtokens);
+                        remainingWord = remainingWord.substring(i);
+                        LOG.info("Found substring in dictionary: [{}] -> {}", substring, subtokens);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    LOG.warn("Could not tokenize word: {}", word);
+                    tokens.add(word);
+                    remainingWord = "";
+                }
+            }
+
             return tokens;
         }
 

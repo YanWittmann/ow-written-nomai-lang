@@ -84,46 +84,61 @@ public class WrittenNomaiConverter {
         return bestShapes;
     }
 
-    public static BezierCurveCoordinateSystem sizeDependantBezierCurveProvider(List<LetterShape> letterShapes) {
+    public static BezierCurve overrideBezierCurve = null;
+
+    public static BezierCurveCoordinateSystem lengthDependantUpwardsSpiralBezierCurveProvider(List<LetterShape> letterShapes) {
         if (letterShapes.isEmpty()) {
             return new BezierCurve(new Point2D.Double(0, 0), new Point2D.Double(1, 1)).getCoordinateSystem();
         }
-        final double largestX = letterShapes.stream().mapToDouble(shape -> shape.getTransformation().getOffsetPosition().getX()).max().orElse(0);
+        final double largestX = letterShapes.stream().mapToDouble(shape -> {
+            if (shape.isLetterConsonantOrRoot()) {
+                return shape.getTransformation().getOffsetPosition().getX();
+            } else {
+                return shape.getTransformation().getOffsetPosition().getX() + 300;
+            }
+        }).max().orElse(0);
         LOG.info("Largest x is [{}]", largestX);
 
-        final BezierCurve curve = new BezierCurve();
+        final BezierCurve curve;
 
-        // the concept behind the different curves is that they become longer and more detailed the more letters there are
-        if (largestX < 500) {
-            // {{161, 505}, {137, 356}, {211, 174}, {338, 112}}
-            curve.addControlPoint(new Point2D.Double(161, 505), new Point2D.Double(137, 356), new Point2D.Double(211, 174), new Point2D.Double(338, 112));
-        } else if (largestX >= 500 && largestX < 950) {
-            // {{212, 495}, {26, 224}, {317, 47}, {434, 228}}
-            curve.addControlPoint(new Point2D.Double(212, 495), new Point2D.Double(26, 224), new Point2D.Double(317, 47), new Point2D.Double(434, 228));
-        } else if (largestX >= 950 && largestX < 1300) {
-            // {{199, 391}, {56, 121}, {359, 194}, {251, 298}}
-            curve.addControlPoint(new Point2D.Double(199, 391), new Point2D.Double(56, 121), new Point2D.Double(359, 194), new Point2D.Double(251, 298));
-        } else if (largestX >= 1300 && largestX < 1700) {
-            // {{365, 1012}, {43, 440}, {369, 45}, {821, 172}, {961, 593}, {606, 741}}
-            curve.addControlPoint(new Point2D.Double(365, 1012), new Point2D.Double(43, 440), new Point2D.Double(369, 45), new Point2D.Double(821, 172), new Point2D.Double(961, 593), new Point2D.Double(606, 741));
-        } else if (largestX >= 1700 && largestX < 2300) {
-            // {{774, 950}, {545, 126}, {1257, 330}, {1267, 711}, {884, 693}}
-            curve.addControlPoint(new Point2D.Double(774, 950), new Point2D.Double(545, 126), new Point2D.Double(1257, 330), new Point2D.Double(1267, 711), new Point2D.Double(884, 693));
-        } else if (largestX >= 2300 && largestX < 3000) {
-            // {{943, 934}, {458, 274}, {1417, 95}, {1460, 788}, {1070, 802}, {950, 592}}
-            curve.addControlPoint(new Point2D.Double(943, 934), new Point2D.Double(458, 274), new Point2D.Double(1417, 95), new Point2D.Double(1460, 788), new Point2D.Double(1070, 802), new Point2D.Double(950, 592));
-        } else if (largestX >= 3000 && largestX < 4000) {
-            // {{970, 892}, {449, 241}, {1452, 116}, {1397, 761}, {880, 953}, {826, 534}, {1019, 509}}
-            curve.addControlPoint(new Point2D.Double(970, 892), new Point2D.Double(449, 241), new Point2D.Double(1452, 116), new Point2D.Double(1397, 761), new Point2D.Double(880, 953), new Point2D.Double(826, 534), new Point2D.Double(1019, 509));
-        } else if (largestX >= 4000 && largestX < 5000) {
-            // {{934, 927}, {269, 106}, {1578, 54}, {1508, 887}, {818, 993}, {460, 545}, {1059, 276}, {1026, 552}}
-            curve.addControlPoint(new Point2D.Double(934, 927), new Point2D.Double(269, 106), new Point2D.Double(1578, 54), new Point2D.Double(1508, 887), new Point2D.Double(818, 993), new Point2D.Double(460, 545), new Point2D.Double(1059, 276), new Point2D.Double(1026, 552));
-        } else if (largestX >= 5000 && largestX < 6000) {
-            // {{834, 921}, {358, 294}, {1639, 113}, {1136, 1149}, {740, 1070}, {451, 356}, {1143, 453}, {935, 673}}
-            curve.addControlPoint(new Point2D.Double(834, 921), new Point2D.Double(358, 294), new Point2D.Double(1639, 113), new Point2D.Double(1136, 1149), new Point2D.Double(740, 1070), new Point2D.Double(451, 356), new Point2D.Double(1143, 453), new Point2D.Double(935, 673));
+        if (overrideBezierCurve != null) {
+            curve = overrideBezierCurve.clone();
         } else {
-            // {{882, 913}, {239, 133}, {1698, 53}, {1233, 1137}, {611, 1146}, {363, 254}, {1112, 168}, {1054, 734}, {894, 593}}
-            curve.addControlPoint(new Point2D.Double(882, 913), new Point2D.Double(239, 133), new Point2D.Double(1698, 53), new Point2D.Double(1233, 1137), new Point2D.Double(611, 1146), new Point2D.Double(363, 254), new Point2D.Double(1112, 168), new Point2D.Double(1054, 734), new Point2D.Double(894, 593));
+            curve = new BezierCurve();
+
+
+            // the concept behind the different curves is that they become longer and more detailed the more letters there are
+            if (largestX < 500) {
+                // {{161, 505}, {137, 356}, {211, 174}, {338, 112}}
+                curve.addControlPoint(new Point2D.Double(161, 505), new Point2D.Double(30, 335), new Point2D.Double(198, 125), new Point2D.Double(337, 235));
+            } else if (largestX >= 500 && largestX < 950) {
+                // {{212, 495}, {26, 224}, {317, 47}, {434, 228}}
+                curve.addControlPoint(new Point2D.Double(284, 493), new Point2D.Double(78, 230), new Point2D.Double(389, 38), new Point2D.Double(404, 263));
+            } else if (largestX >= 950 && largestX < 1300) {
+                // {{199, 391}, {56, 121}, {359, 194}, {251, 298}}
+                curve.addControlPoint(new Point2D.Double(199, 391), new Point2D.Double(28, 177), new Point2D.Double(351, 210), new Point2D.Double(237, 318));
+            } else if (largestX >= 1300 && largestX < 1700) {
+                // {{365, 1012}, {43, 440}, {369, 45}, {821, 172}, {961, 593}, {606, 741}}
+                curve.addControlPoint(new Point2D.Double(402, 782), new Point2D.Double(41, 316), new Point2D.Double(542, 100), new Point2D.Double(800, 260), new Point2D.Double(729, 633), new Point2D.Double(385, 455));
+            } else if (largestX >= 1700 && largestX < 2300) {
+                // {{774, 950}, {545, 126}, {1257, 330}, {1267, 711}, {884, 693}}
+                curve.addControlPoint(new Point2D.Double(432, 690), new Point2D.Double(146, 343), new Point2D.Double(507, 128), new Point2D.Double(870, 496), new Point2D.Double(450, 695), new Point2D.Double(462, 478));
+            } else if (largestX >= 2300 && largestX < 3000) {
+                // {{943, 934}, {458, 274}, {1417, 95}, {1460, 788}, {1070, 802}, {950, 592}}
+                curve.addControlPoint(new Point2D.Double(432, 690), new Point2D.Double(144, 538), new Point2D.Double(294, 214), new Point2D.Double(737, 370), new Point2D.Double(450, 695), new Point2D.Double(340, 499));
+            } else if (largestX >= 3000 && largestX < 4000) {
+                // {{970, 892}, {449, 241}, {1452, 116}, {1397, 761}, {880, 953}, {826, 534}, {1019, 509}}
+                curve.addControlPoint(new Point2D.Double(286, 508), new Point2D.Double(105, 324), new Point2D.Double(390, 173), new Point2D.Double(473, 479), new Point2D.Double(196, 493), new Point2D.Double(228, 341), new Point2D.Double(299, 367));
+            } else if (largestX >= 4000 && largestX < 5000) {
+                // {{934, 927}, {269, 106}, {1578, 54}, {1508, 887}, {818, 993}, {460, 545}, {1059, 276}, {1026, 552}}
+                curve.addControlPoint(new Point2D.Double(318, 558), new Point2D.Double(116, 300), new Point2D.Double(420, 129), new Point2D.Double(692, 554), new Point2D.Double(124, 640), new Point2D.Double(223, 293), new Point2D.Double(387, 350), new Point2D.Double(343, 413));
+            } else if (largestX >= 5000 && largestX < 6000) {
+                // {{834, 921}, {358, 294}, {1639, 113}, {1136, 1149}, {740, 1070}, {451, 356}, {1143, 453}, {935, 673}}
+                curve.addControlPoint(new Point2D.Double(322, 530), new Point2D.Double(108, 291), new Point2D.Double(427, 108), new Point2D.Double(717, 603), new Point2D.Double(111, 680), new Point2D.Double(64, 223), new Point2D.Double(481, 255), new Point2D.Double(368, 472), new Point2D.Double(315, 400));
+            } else {
+                // {{882, 913}, {239, 133}, {1698, 53}, {1233, 1137}, {611, 1146}, {363, 254}, {1112, 168}, {1054, 734}, {894, 593}}
+                curve.addControlPoint(new Point2D.Double(322, 530), new Point2D.Double(104, 284), new Point2D.Double(427, 108), new Point2D.Double(699, 595), new Point2D.Double(111, 680), new Point2D.Double(44, 204), new Point2D.Double(475, 244), new Point2D.Double(375, 483), new Point2D.Double(302, 389));
+            }
         }
 
         curve.setFirstControlPointAsOrigin();

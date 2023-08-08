@@ -8,6 +8,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class NomaiTextCompositor {
 
@@ -19,6 +23,8 @@ public class NomaiTextCompositor {
 
     public final static BufferedImage BACKGROUND_NOMAI_WALL = tryToReadBufferedImageFromResources("ow-lang-renderer/nomai_wall_background_texture.png");
     public final static BufferedImage BACKGROUND_SPACE = tryToReadBufferedImageFromResources("ow-lang-renderer/blue_background_texture.png");
+    public final static BufferedImage BACKGROUND_BLACK = tryToReadBufferedImageFromResources("ow-lang-renderer/black_background_texture.png");
+    public final static BufferedImage BACKGROUND_TRANSPARENT = tryToReadBufferedImageFromResources("ow-lang-renderer/transparent_background_texture.png");
 
     private static BufferedImage readBufferedImageFromResources(String path) throws IOException {
         final InputStream resourceAsStream = NomaiTextCompositor.class.getClassLoader().getResourceAsStream(path);
@@ -51,12 +57,26 @@ public class NomaiTextCompositor {
         return styleNomaiText(image, NOMAI_TEXT_LIGHT_BLUE_PRIMARY, NOMAI_TEXT_LIGHT_BLUE_SECONDARY, NOMAI_TEXT_LIGHT_BLUE_TERNARY);
     }
 
+    private static final ExecutorService executor = Executors.newFixedThreadPool(3);
+
     public static BufferedImage styleNomaiText(BufferedImage image, Color primary, Color secondary, Color ternary) {
         LOG.info("Styling nomai text with colors: " + primary + ", " + secondary + ", " + ternary);
 
-        final BufferedImage primaryImage = ImageStyler.recolorImage(image, primary);
-        final BufferedImage secondaryImage = ImageStyler.createBlurredMorphologizedImage(ImageStyler.recolorImage(image, secondary), secondary, 5, 5);
-        final BufferedImage ternaryImage = ImageStyler.createBlurredMorphologizedImage(ImageStyler.recolorImage(image, ternary), ternary, 10, 10);
+        final Future<BufferedImage> primaryFuture = executor.submit(() -> ImageStyler.recolorImage(image, primary));
+        final Future<BufferedImage> secondaryFuture = executor.submit(() -> ImageStyler.createBlurredMorphologizedImage(ImageStyler.recolorImage(image, secondary), secondary, 5, 5));
+        final Future<BufferedImage> ternaryFuture = executor.submit(() -> ImageStyler.createBlurredMorphologizedImage(ImageStyler.recolorImage(image, ternary), ternary, 10, 10));
+
+        final BufferedImage primaryImage;
+        final BufferedImage secondaryImage;
+        final BufferedImage ternaryImage;
+
+        try {
+            primaryImage = primaryFuture.get();
+            secondaryImage = secondaryFuture.get();
+            ternaryImage = ternaryFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Failed to style nomai text", e);
+        }
 
         final BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
         final Graphics2D g2d = result.createGraphics();

@@ -15,12 +15,16 @@ import masecla.reddit4j.exceptions.AuthenticationException;
 import masecla.reddit4j.objects.RedditComment;
 import masecla.reddit4j.objects.RedditData;
 import masecla.reddit4j.objects.RedditListing;
+import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,9 +34,37 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class Main {
+public class RedditBotMain {
 
     private static WrittenNomaiConverter converter;
+
+    private final static File GENERATED_IMAGES_DIR = new File("generated");
+    private final static File GENERATED_IMAGES_JSON_FILE = new File(GENERATED_IMAGES_DIR, "generated-files.json");
+    private final static JSONArray GENERATED_FILES = parseGeneratedFiles();
+
+    private static JSONArray parseGeneratedFiles() {
+        try {
+            makeParentDirs(GENERATED_IMAGES_JSON_FILE);
+            return GENERATED_IMAGES_JSON_FILE.exists() ? new JSONArray(FileUtils.readFileToString(GENERATED_IMAGES_JSON_FILE, StandardCharsets.UTF_8)) : new JSONArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void saveGeneratedFiles() {
+        try {
+            makeParentDirs(GENERATED_IMAGES_JSON_FILE);
+            FileUtils.writeStringToFile(GENERATED_IMAGES_JSON_FILE, GENERATED_FILES.toString(2), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void makeParentDirs(File file) {
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+    }
 
     public static void main(String[] args) throws IOException, AuthenticationException, InterruptedException {
         converter = new WrittenNomaiConverter();
@@ -41,15 +73,7 @@ public class Main {
                 new File("nomai-language-core/src/main/resources/ow-lang/cmudict-to-ow.txt")
         ));
         converter.setLineGenerator(new LetterToLineConverter());
-        converter.setTransformAlongCurveProvider(WrittenNomaiConverter::sizeDependantBezierCurveProvider);
-
-        for (File file : getTempFile("nomai-language", "png").getParentFile().listFiles((dir, name) -> name.startsWith("written_nomai_") && name.endsWith(".png"))) {
-            if (!file.delete()) {
-                System.err.println("Could not delete file: " + file.getAbsolutePath());
-            } else {
-                System.out.println("Deleted file: " + file.getAbsolutePath());
-            }
-        }
+        converter.setTransformAlongCurveProvider(WrittenNomaiConverter::lengthDependantUpwardsSpiralBezierCurveProvider);
 
         runBot();
 
@@ -173,12 +197,18 @@ public class Main {
             case "space":
             case "stars":
             case "blue":
+            default:
                 backgroundImage = NomaiTextCompositor.BACKGROUND_SPACE;
+                break;
+            case "black":
+                backgroundImage = NomaiTextCompositor.BACKGROUND_BLACK;
+                break;
+            case "transparent":
+                backgroundImage = NomaiTextCompositor.BACKGROUND_TRANSPARENT;
                 break;
             case "nomai_wall":
             case "scroll_wall":
             case "wall":
-            default:
                 backgroundImage = NomaiTextCompositor.BACKGROUND_NOMAI_WALL;
         }
         final int backgroundImagePadding = 50;
@@ -223,7 +253,7 @@ public class Main {
 
         renderer.setShapes(combinedShapes);
 
-        final BufferedImage baseRenderedImage = renderer.renderShapes(8000, 8000, 2, new Point2D.Double(4000, 4000));
+        final BufferedImage baseRenderedImage = renderer.renderShapes(8000, 8000, 2, new Point2D.Double(4000, 8000));
         final BufferedImage croppedRenderedImage = renderer.cropImageToTarget(baseRenderedImage, 70);
 
         final NomaiTextCompositor nomaiTextCompositor = new NomaiTextCompositor();
@@ -234,13 +264,21 @@ public class Main {
 
         final BufferedImage styledTextWithBackground = nomaiTextCompositor.overlayNomaiTextWithBackground(resizedStyledImage, backgroundImage);
 
-        final File outFile = getTempFile("written_nomai_", ".png");
+        final File outFile = getOutFile("written_nomai_", ".png");
         ImageIO.write(styledTextWithBackground, "png", outFile);
-
 
         final String explanationText = snippetWordsTrees.values().stream()
                 .map(e -> e.stream().map(l -> l.stream().map(WrittenNomaiTextLetter::getToken).collect(Collectors.joining(" "))).collect(Collectors.joining(" | ")))
                 .collect(Collectors.joining(" ||| "));
+
+        GENERATED_FILES.put(new JSONObject()
+                .put("text", normalText)
+                .put("style", style)
+                .put("snippets", new JSONArray(snippets))
+                .put("explanation", explanationText)
+                .put("imageFile", outFile.getAbsolutePath())
+        );
+        saveGeneratedFiles();
 
 
         return new RenderResult(outFile, explanationText);
@@ -258,11 +296,9 @@ public class Main {
         }
     }
 
-    private static File getTempFile(String prefix, String suffix) {
+    private static File getOutFile(String prefix, String suffix) {
         try {
-            final File tempFile = File.createTempFile(prefix, suffix);
-            tempFile.deleteOnExit();
-            return tempFile;
+            return new File(GENERATED_IMAGES_DIR, prefix + System.currentTimeMillis() + suffix).getCanonicalFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

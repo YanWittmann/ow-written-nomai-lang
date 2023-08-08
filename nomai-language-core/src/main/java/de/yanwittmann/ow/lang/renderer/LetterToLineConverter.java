@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class LetterToLineConverter {
 
@@ -192,6 +193,7 @@ public class LetterToLineConverter {
 
         boolean isFirstRoot = true;
 
+        // randomly offset and rotate
         for (LetterShape letterShape : letterShapes) {
             letterShape.getTransformation().setScale(randomScale.next(random) * (random.nextBoolean() ? 1 : -1));
             letterShape.getTransformation().setRotationAngle(randomRotation.next(random));
@@ -208,6 +210,20 @@ public class LetterToLineConverter {
                 offset = letterShape.getTransformation().getOffsetPosition().getY() > 0 ? randomVerticalOffsetOuter.next(random) : -randomVerticalOffsetOuter.next(random);
             }
             letterShape.getTransformation().setOffsetPosition(new Point2D.Double(letterShape.getTransformation().getOffsetPosition().getX(), letterShape.getTransformation().getOffsetPosition().getY() + offset));
+        }
+
+        // detect collisions on outer lines and move them further out if necessary
+        final List<LetterShape> outerLines = letterShapes.stream().filter(l -> !l.isLetterConsonantOrRoot()).collect(Collectors.toList());
+        for (LetterShape letterShape : outerLines) {
+            outerLines.stream()
+                    .filter(otherLetterShape -> otherLetterShape != letterShape)
+                    .filter(otherLetterShape -> intersectionCount(letterShape, otherLetterShape) > 0)
+                    .findFirst()
+                    .ifPresent(otherLetterShape -> {
+                        final boolean isLetterShapeAboveOtherLetterShape = letterShape.getTransformation().getOffsetPosition().getY() < otherLetterShape.getTransformation().getOffsetPosition().getY();
+                        final double offset = (isLetterShapeAboveOtherLetterShape ? -1 : 1) * generalLetterWidth;
+                        letterShape.getTransformation().setOffsetPosition(new Point2D.Double(letterShape.getTransformation().getOffsetPosition().getX(), letterShape.getTransformation().getOffsetPosition().getY() + offset));
+                    });
         }
 
         return letterShapes;

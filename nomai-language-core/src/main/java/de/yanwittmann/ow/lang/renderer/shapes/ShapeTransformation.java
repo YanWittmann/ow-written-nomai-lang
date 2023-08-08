@@ -10,6 +10,15 @@ public class ShapeTransformation {
     private double rotationAngle = 0;
     private double scale = 1;
 
+    public ShapeTransformation(ShapeTransformation transformation) {
+        this.offsetPosition = transformation.offsetPosition;
+        this.rotationAngle = transformation.rotationAngle;
+        this.scale = transformation.scale;
+    }
+
+    public ShapeTransformation() {
+    }
+
     public Point2D absolutePosition(Point2D relativePosition) {
         // rotate
         final double transformedX = relativePosition.getX() * Math.cos(rotationAngle) - relativePosition.getY() * Math.sin(rotationAngle);
