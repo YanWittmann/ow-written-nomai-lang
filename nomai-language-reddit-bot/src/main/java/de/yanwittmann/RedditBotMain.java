@@ -81,10 +81,10 @@ public class RedditBotMain {
     }
 
     private static void runBot() throws IOException, AuthenticationException, InterruptedException {
-        final String CLIENT_ID = "pCL491RYILLmhPRxe5cgrg";
-        final String CLIENT_SECRET = "zGsaXWyDy-AdSFf3gtsXqjhHBVV0Zw";
-        final String USERNAME = "_SKYBALL_";
-        final String PASSWORD = "Yaildheihr3844u58i4htiohnl.efhnosihfihtoethp9348heoiahtp4puihtpe4uihopejfpirjti84hz8ioeh4söhte47hztoiwahrä3äwopajto3htwpath8z3owuz43w7ugquiZFDIZGuoG§T/GHOUGou3gtubthowugtouehtbsjgubh8H";
+        final String CLIENT_ID = "";
+        final String CLIENT_SECRET = "";
+        final String USERNAME = "";
+        final String PASSWORD = "";
 
         Reddit4J client = Reddit4J.rateLimited().setUsername(USERNAME).setPassword(PASSWORD)
                 .setClientId(CLIENT_ID).setClientSecret(CLIENT_SECRET)
@@ -218,6 +218,8 @@ public class RedditBotMain {
                 backgroundImage = NomaiTextCompositor.BACKGROUND_STONE_WALL;
                 break;
             case "lamp":
+            case "wall lamp":
+            case "wall_lamp":
             case "wall 2":
                 backgroundImage = NomaiTextCompositor.BACKGROUND_NOMAI_WALL_2_LAMP;
                 break;
@@ -228,6 +230,7 @@ public class RedditBotMain {
             case "scroll_wall":
             case "scroll":
             case "wall":
+            case "wall 1":
             default:
                 backgroundImage = NomaiTextCompositor.BACKGROUND_NOMAI_WALL_HANGING_CITY;
         }
@@ -353,22 +356,5 @@ public class RedditBotMain {
                 break;
             }
         }
-    }
-
-    private static void customClientTest() throws IOException {
-        final String CLIENT_ID = "pCL491RYILLmhPRxe5cgrg";
-        final String CLIENT_SECRET = "zGsaXWyDy-AdSFf3gtsXqjhHBVV0Zw";
-        final String USERNAME = "_SKYBALL_";
-        final String PASSWORD = "Yaildheihr3844u58i4htiohnl.efhnosihfihtoethp9348heoiahtp4puihtpe4uihopejfpirjti84hz8ioeh4söhte47hztoiwahrä3äwopajto3htwpath8z3owuz43w7ugquiZFDIZGuoG§T/GHOUGou3gtubthowugtouehtbsjgubh8H";
-
-        final RedditApiAccess api = new RedditApiAccess(CLIENT_ID, CLIENT_SECRET, USERNAME, PASSWORD);
-
-        final String postId = api.extractPostId("https://www.reddit.com/user/_SKYBALL_/comments/15jjekb/api_playground_post/");
-        System.out.println(postId);
-        final String subreddit = api.findSubredditForPost(postId);
-        //final String subreddit = "u__SKYBALL_";
-        System.out.println(subreddit);
-
-        api.postComment(postId, "Test comment");
     }
 }
