@@ -69,8 +69,9 @@ public class RedditBotMain {
     public static void main(String[] args) throws IOException, AuthenticationException, InterruptedException {
         converter = new WrittenNomaiConverter();
         converter.setTokenizer(new WrittenNomaiTextTokenizer(
-                new File("nomai-language-core/src/main/resources/ow-lang/cmudict.dict"),
-                new File("nomai-language-core/src/main/resources/ow-lang/cmudict-to-ow.txt")
+                WrittenNomaiTextTokenizer.class,
+                "/ow-lang/cmudict.dict",
+                "/ow-lang/cmudict-to-ow.txt"
         ));
         converter.setLineGenerator(new LetterToLineConverter());
         converter.setTransformAlongCurveProvider(WrittenNomaiConverter::lengthDependantUpwardsSpiralBezierCurveProvider);
@@ -106,7 +107,7 @@ public class RedditBotMain {
             public void run() {
                 try {
                     System.out.println("Fetching comments");
-                    for (RedditComment comment : client.getCommentsForPost("skyball_personal", "15jkyrq").submit()) {
+                    for (RedditComment comment : client.getCommentsForPost("skyball_personal", "15m85ph").submit()) {
                         try {
                             handleComment(customClient, comment);
                         } catch (IOException e) {
@@ -175,6 +176,9 @@ public class RedditBotMain {
 
         if (text.isEmpty()) {
             return;
+        }
+        if (text.length() > 120) {
+            text = text.substring(0, 120);
         }
         if (style.isEmpty()) {
             style = "wall";

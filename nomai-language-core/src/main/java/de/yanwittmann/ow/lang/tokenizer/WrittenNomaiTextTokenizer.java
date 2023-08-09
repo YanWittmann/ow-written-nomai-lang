@@ -1,11 +1,14 @@
 package de.yanwittmann.ow.lang.tokenizer;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -26,6 +29,24 @@ public class WrittenNomaiTextTokenizer {
         this.conversionTable = loadConversionTable(conversionTableFile);
         LOG.info("Loaded conversion table with [{}] entries from: {}", conversionTable.size(), conversionTableFile.getAbsolutePath());
 
+        assertConversionTableParsable();
+    }
+
+    public WrittenNomaiTextTokenizer(Class<?> clazz, String resourcePathDictionaryFile, String resourcePathConversionTableFile) throws IOException {
+        Objects.requireNonNull(clazz, "Class cannot be null!");
+        Objects.requireNonNull(resourcePathDictionaryFile, "Dictionary file cannot be null!");
+        Objects.requireNonNull(resourcePathConversionTableFile, "Conversion table file cannot be null!");
+
+        this.dictionary = loadDictionary(clazz, resourcePathDictionaryFile);
+        LOG.info("Loaded dictionary with [{}] entries from: {}", dictionary.size(), resourcePathDictionaryFile);
+
+        this.conversionTable = loadConversionTable(clazz, resourcePathConversionTableFile);
+        LOG.info("Loaded conversion table with [{}] entries from: {}", conversionTable.size(), resourcePathConversionTableFile);
+
+        assertConversionTableParsable();
+    }
+
+    private void assertConversionTableParsable() {
         // assert parseable
         final Set<String> unparsableConversionTableEntries = new HashSet<>();
         for (String key : conversionTable.values()) {
@@ -195,9 +216,43 @@ public class WrittenNomaiTextTokenizer {
      * @throws IOException If the dictionary file could not be read.
      */
     private static Map<String, List<List<String>>> loadDictionary(File file) throws IOException {
+        final List<String> lines = FileUtils.readLines(file, StandardCharsets.UTF_8);
+
+        return loadDictionary(lines);
+    }
+
+    private static Map<String, String> loadConversionTable(File conversionTableFile) throws IOException {
+        final List<String> lines = FileUtils.readLines(conversionTableFile, StandardCharsets.UTF_8);
+
+        return loadConversionTable(lines);
+    }
+
+    private static Map<String, List<List<String>>> loadDictionary(Class<?> clazz, String resource) throws IOException {
+        try (InputStream inputStream = clazz.getResourceAsStream(resource)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("Dictionary resource not found: " + resource);
+            }
+            final List<String> lines = IOUtils.readLines(inputStream, StandardCharsets.UTF_8);
+
+            return loadDictionary(lines);
+        }
+    }
+
+    private static Map<String, String> loadConversionTable(Class<?> clazz, String resource) throws IOException {
+        try (InputStream inputStream = clazz.getResourceAsStream(resource)) {
+            if (inputStream == null) {
+                throw new FileNotFoundException("Conversion table resource not found: " + resource);
+            }
+            final List<String> lines = IOUtils.readLines(inputStream, StandardCharsets.UTF_8);
+
+            return loadConversionTable(lines);
+        }
+    }
+
+    private static Map<String, List<List<String>>> loadDictionary(List<String> lines) {
         final Map<String, List<List<String>>> dictionary = new HashMap<>();
 
-        for (String line : FileUtils.readLines(file, StandardCharsets.UTF_8)) {
+        for (String line : lines) {
             line = line.split("#", 2)[0].trim();
 
             if (!line.isEmpty()) {
@@ -212,10 +267,10 @@ public class WrittenNomaiTextTokenizer {
         return dictionary;
     }
 
-    private static Map<String, String> loadConversionTable(File conversionTableFile) throws IOException {
+    private static Map<String, String> loadConversionTable(List<String> lines) {
         final Map<String, String> conversionTable = new HashMap<>();
 
-        for (String line : FileUtils.readLines(conversionTableFile, StandardCharsets.UTF_8)) {
+        for (String line : lines) {
             final String[] parts = line.split(" ", 2);
             final String phoneticSymbol = parts[0];
             final String customLanguageSymbol = parts[1];
