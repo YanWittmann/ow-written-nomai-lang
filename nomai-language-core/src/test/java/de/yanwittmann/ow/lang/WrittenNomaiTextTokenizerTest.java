@@ -118,8 +118,8 @@ class WrittenNomaiTextTokenizerTest {
         converter.setTransformAlongCurveProvider(WrittenNomaiConverter::lengthDependantUpwardsSpiralBezierCurveProvider);
 
         final LanguageRenderer renderer = new LanguageRenderer();
-        renderer.setOffset(new Point2D.Double(250, 1000));
-        renderer.setSize(1000, 1050);
+        // renderer.setOffset(new Point2D.Double(250, 1000));
+        renderer.setSize(1000, 1000);
         renderer.setVisible(true);
         renderer.setLocationRelativeTo(null);
         renderer.setCropImage(true);

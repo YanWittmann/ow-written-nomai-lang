@@ -393,4 +393,48 @@ public class LetterToLineConverter {
 
         return count;
     }
+
+    public void setGapBetweenCenterLineAndOuterLinesSingle(int gapBetweenCenterLineAndOuterLinesSingle) {
+        this.gapBetweenCenterLineAndOuterLinesSingle = gapBetweenCenterLineAndOuterLinesSingle;
+    }
+
+    public void setGapBetweenCenterLineAndOuterLinesMultiple(int gapBetweenCenterLineAndOuterLinesMultiple) {
+        this.gapBetweenCenterLineAndOuterLinesMultiple = gapBetweenCenterLineAndOuterLinesMultiple;
+    }
+
+    public void setOutsideStartGapWidthSingle(int outsideStartGapWidthSingle) {
+        this.outsideStartGapWidthSingle = outsideStartGapWidthSingle;
+    }
+
+    public void setOutsideStartGapWidthMultiple(int outsideStartGapWidthMultiple) {
+        this.outsideStartGapWidthMultiple = outsideStartGapWidthMultiple;
+    }
+
+    public void setWordLineWidth(int wordLineWidth) {
+        this.wordLineWidth = wordLineWidth;
+    }
+
+    public void setGeneralLetterWidth(int generalLetterWidth) {
+        this.generalLetterWidth = generalLetterWidth;
+    }
+
+    public void setRandomVerticalOffsetCenter(RandomBetweenInteger randomVerticalOffsetCenter) {
+        this.randomVerticalOffsetCenter = randomVerticalOffsetCenter;
+    }
+
+    public void setRandomVerticalOffsetOuter(RandomBetweenInteger randomVerticalOffsetOuter) {
+        this.randomVerticalOffsetOuter = randomVerticalOffsetOuter;
+    }
+
+    public void setRandomScale(RandomBetweenDouble randomScale) {
+        this.randomScale = randomScale;
+    }
+
+    public void setRandomRotation(RandomBetweenDouble randomRotation) {
+        this.randomRotation = randomRotation;
+    }
+
+    public void setRandomOuterElementsStartPointHorizontalOffset(RandomBetweenInteger randomOuterElementsStartPointHorizontalOffset) {
+        this.randomOuterElementsStartPointHorizontalOffset = randomOuterElementsStartPointHorizontalOffset;
+    }
 }
