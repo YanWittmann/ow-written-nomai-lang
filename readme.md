@@ -302,7 +302,6 @@ how to use the Nomai language core library.
 
 The library functionality is mostly encapsulated in the `WrittenNomaiConverter` class. It expects several parameters:
 
-@formatter:off
 ```java
 final WrittenNomaiConverter converter = new WrittenNomaiConverter();
 converter.setTokenizer(new WrittenNomaiTextTokenizer(
@@ -313,7 +312,6 @@ converter.setTokenizer(new WrittenNomaiTextTokenizer(
 converter.setLineGenerator(new LetterToLineConverter());
 converter.setTransformAlongCurveProvider(WrittenNomaiConverter::lengthDependantUpwardsSpiralBezierCurveProvider);
 ```
-@formatter:on
 
 So, what is going on in there?
 
@@ -335,14 +333,12 @@ So, what is going on in there?
 Then you can use the `convertTextToNodeTree` method on the `WrittenNomaiConverter` to transform a string into a node
 tree that can be transformed into drawable objects using the `convertNodeTreeToDrawables` method:
 
-@formatter:off
 ```java
 final WrittenNomaiBranchingLetterNode tree = converter.convertTextToNodeTree("Nomai text generator!");
 // 10 = attempts to generate a 'nice' looking result
 final WrittenNomaiConverter.DrawablesResult shapes = converter.convertNodeTreeToDrawables(random, 10, tree);
 final List<Object> drawables = shapes.getDrawables();
 ```
-@formatter:on
 
 Btw I'm sorry that the return value is `List<Object>`. At the time I just wanted to get the project done and was
 constantly mixing and changing drawable types from different sources.
@@ -351,7 +347,6 @@ constantly mixing and changing drawable types from different sources.
 
 Here we can't use the comfort of having the `convertTextToNodeTree` method doing all for us
 
-@formatter:off
 ```java
 // true would split within sentences when length of 50 is reached
 final List<String> snippets = converter.getTokenizer().convertTextToBranchSnippets(normalText, false);
@@ -371,13 +366,11 @@ for (String snippet : snippets) {
 
 final List<Object> drawables = converter.combineMultipleDrawableBranches(snippetShapes.values());
 ```
-@formatter:on
 
 ### Render your drawables in a UI
 
 You can use the built-in renderer that uses awt graphics to display your image if you just want to view it.
 
-@formatter:off
 ```java
 final LanguageRenderer renderer = new LanguageRenderer();
 renderer.setSize(1000, 1000);
@@ -386,7 +379,6 @@ renderer.setLocationRelativeTo(null);
 renderer.setCropImage(true); // this will scale your image to fit the window size
 renderer.setShapes(drawables);
 ```
-@formatter:on
 
 ### Render your drawables into an image file
 
@@ -395,7 +387,6 @@ we will use the `renderShapes` method to get an image from it and use several st
 
 You can do whatever with the resulting image, write it into a file or post it on Reddit.
 
-@formatter:off
 ```java
 final LanguageRenderer renderer = new LanguageRenderer();
 renderer.setOffset(new Point2D.Double(0, 0));
@@ -416,7 +407,6 @@ final BufferedImage blueStyledImage = nomaiTextCompositor.styleNomaiTextLightBlu
 final BufferedImage resizedStyledImage = LanguageRenderer.resizeImageMaintainAspectRatio(blueStyledImage, backgroundImage.getWidth() - backgroundImagePadding * 2, backgroundImage.getHeight() - backgroundImagePadding * 2);
 final BufferedImage styledTextWithBackground = nomaiTextCompositor.overlayNomaiTextWithBackground(resizedStyledImage, backgroundImage);
 ```
-@formatter:on
 
 That's pretty much it, now you know how to generate images using my little library! If you end up using it somewhere, I
 would appreciate some credits, and that you're letting me know so that I can check it out!
