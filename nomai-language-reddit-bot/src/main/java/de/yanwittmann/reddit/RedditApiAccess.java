@@ -50,7 +50,7 @@ public class RedditApiAccess {
         this.client = client;
     }
 
-    protected String getAccessToken() throws IOException {
+    public String getAccessToken() throws IOException {
         if (accessToken == null || expiresAt < System.currentTimeMillis() / 1000) {
             final String auth = clientId + ":" + clientSecret;
             final String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
@@ -105,6 +105,26 @@ public class RedditApiAccess {
         final Request request = createRequest(COMMENT_URL, commentRequestBody, "Bearer " + getAccessToken(), "POST");
 
         return sendRequestParseJson(request);
+    }
+
+    public void commentOnCommentWithText(String parentId, String text) throws IOException {
+        JSONObject rtjson = new JSONObject();
+        JSONArray document = new JSONArray();
+
+        document.put(new JSONObject().put("e", "par").put("c", new JSONArray().put(new JSONObject().put("e", "text").put("t", text))));
+
+        rtjson.put("document", document);
+        System.out.println(rtjson);
+
+        final String commentRequestBody = "api_type=json&thing_id=" + parentId + "&richtext_json=" + rtjson + "&validate_on_submit=true";
+
+        final Request request = createRequest(COMMENT_URL, commentRequestBody, "Bearer " + getAccessToken(), "POST");
+
+        try {
+            sendRequestParseJson(request);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public String extractKeyFromXml(String xml) {
@@ -191,7 +211,7 @@ public class RedditApiAccess {
         return responseJson.getJSONObject("data").getJSONArray("children").getJSONObject(0).getJSONObject("data").getString("subreddit");
     }
 
-    private JSONObject sendRequestParseJson(Request request) throws IOException {
+    public JSONObject sendRequestParseJson(Request request) throws IOException {
         System.out.println("Sending request to " + request.url());
         try (Response response = client.newCall(request).execute()) {
             boolean failed = false;
@@ -232,7 +252,7 @@ public class RedditApiAccess {
         }
     }
 
-    private String sendRequest(Request request) throws IOException {
+    public String sendRequest(Request request) throws IOException {
         System.out.println("Sending request to " + request.url());
         try (Response response = client.newCall(request).execute()) {
             boolean failed = false;
@@ -255,7 +275,7 @@ public class RedditApiAccess {
         }
     }
 
-    private Request createRequest(String url, String requestBody, String authorization, String method) {
+    public Request createRequest(String url, String requestBody, String authorization, String method) {
         System.out.println("Creating request to " + url + " with body " + requestBody);
         final RequestBody body = RequestBody.create(requestBody, MediaType.parse("application/x-www-form-urlencoded"));
 
