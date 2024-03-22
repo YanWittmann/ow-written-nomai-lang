@@ -10,7 +10,7 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="matheval" level="info"/>
+        <Logger name="de.yanwittmann" level="info"/>
         <Root level="info">
             <AppenderRef ref="STDOUT"/>
         </Root>
